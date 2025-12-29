@@ -115,6 +115,36 @@ export const formats = [
   },
 ];
 
+// Common exclusions (things to remove from dishes)
+export const exclusions = [
+  {
+    id: 'no-crema',
+    name: { en: 'No Crema', es: 'Sin Crema' },
+  },
+  {
+    id: 'no-cheese',
+    name: { en: 'No Cheese', es: 'Sin Queso' },
+  },
+  {
+    id: 'no-onion',
+    name: { en: 'No Onion', es: 'Sin Cebolla' },
+  },
+  {
+    id: 'no-cilantro',
+    name: { en: 'No Cilantro', es: 'Sin Cilantro' },
+  },
+  {
+    id: 'no-spicy',
+    name: { en: 'No Spicy', es: 'Sin Picante' },
+  },
+  {
+    id: 'no-avocado',
+    name: { en: 'No Avocado', es: 'Sin Aguacate' },
+  },
+];
+
+export const getExclusionById = (id) => exclusions.find((e) => e.id === id);
+
 export const addons = [
   {
     id: 'guacamole',
@@ -437,22 +467,28 @@ export const getAddonById = (id) => addons.find((a) => a.id === id);
 
 // Helper to format order item for display
 export const formatOrderItem = (item, language = 'en') => {
+  const exclusionNames = (item.exclusions || [])
+    .map((id) => getExclusionById(id)?.name[language])
+    .filter(Boolean);
+
   if (item.type === 'menu-item') {
     return {
       title: item.name[language],
       addons: [],
+      exclusions: exclusionNames,
     };
   }
 
   const protein = getProteinById(item.protein);
   const format = getFormatById(item.format);
-  const addonNames = item.addons
+  const addonNames = (item.addons || [])
     .map((id) => getAddonById(id)?.name[language])
     .filter(Boolean);
 
   return {
     title: `${protein?.name[language]} ${format?.name[language]}`,
     addons: addonNames,
+    exclusions: exclusionNames,
   };
 };
 
@@ -460,6 +496,7 @@ export default {
   proteins,
   formats,
   addons,
+  exclusions,
   menuCategories,
   menuItems,
   dietaryFlags,

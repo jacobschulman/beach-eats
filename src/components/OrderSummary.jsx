@@ -46,6 +46,11 @@ export default function OrderSummary() {
                   <li key={item.id} className={styles.item}>
                     <div className={styles.itemContent}>
                       <h3 className={styles.itemTitle}>{formatted.title}</h3>
+                      {formatted.exclusions && formatted.exclusions.length > 0 && (
+                        <p className={styles.itemExclusions}>
+                          {formatted.exclusions.join(', ')}
+                        </p>
+                      )}
                       {formatted.addons.length > 0 && (
                         <p className={styles.itemAddons}>
                           {t('with')} {formatted.addons.join(', ')}

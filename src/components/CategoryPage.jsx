@@ -33,7 +33,7 @@ function DietaryBadges({ dietary = [], language = 'en' }) {
 }
 
 export default function CategoryPage() {
-  const { t, language, selectedCategory, goToStep, addMenuItemToOrder } = useApp();
+  const { t, language, selectedCategory, goToStep, setPendingItem } = useApp();
 
   const category = menuCategories.find((c) => c.id === selectedCategory);
   const items = menuItems[selectedCategory] || [];
@@ -43,8 +43,8 @@ export default function CategoryPage() {
   };
 
   const handleItemSelect = (item) => {
-    addMenuItemToOrder(item);
-    goToStep('summary');
+    setPendingItem(item);
+    goToStep('modifications');
   };
 
   if (!category) {

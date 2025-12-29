@@ -15,12 +15,16 @@ const initialState = {
   currentStep: 'welcome', // welcome, menu, category, protein, format, addons, summary, checkout, confirmation
   selectedCategory: null,
 
-  // Current item being built
+  // Current item being built (Build Your Own)
   currentItem: {
     protein: null,
     format: null,
     addons: [],
+    exclusions: [],
   },
+
+  // Pending menu item being modified before adding to order
+  pendingItem: null,
 
   // Order (collection of items)
   order: {
@@ -43,8 +47,12 @@ const ACTIONS = {
   SET_PROTEIN: 'SET_PROTEIN',
   SET_FORMAT: 'SET_FORMAT',
   TOGGLE_ADDON: 'TOGGLE_ADDON',
+  TOGGLE_EXCLUSION: 'TOGGLE_EXCLUSION',
   ADD_ITEM_TO_ORDER: 'ADD_ITEM_TO_ORDER',
   ADD_MENU_ITEM_TO_ORDER: 'ADD_MENU_ITEM_TO_ORDER',
+  SET_PENDING_ITEM: 'SET_PENDING_ITEM',
+  TOGGLE_PENDING_EXCLUSION: 'TOGGLE_PENDING_EXCLUSION',
+  ADD_PENDING_ITEM_TO_ORDER: 'ADD_PENDING_ITEM_TO_ORDER',
   REMOVE_ITEM_FROM_ORDER: 'REMOVE_ITEM_FROM_ORDER',
   SET_GUEST_INFO: 'SET_GUEST_INFO',
   PLACE_ORDER: 'PLACE_ORDER',
@@ -93,6 +101,16 @@ function appReducer(state, action) {
       };
     }
 
+    case ACTIONS.TOGGLE_EXCLUSION: {
+      const exclusions = state.currentItem.exclusions.includes(action.payload)
+        ? state.currentItem.exclusions.filter((id) => id !== action.payload)
+        : [...state.currentItem.exclusions, action.payload];
+      return {
+        ...state,
+        currentItem: { ...state.currentItem, exclusions },
+      };
+    }
+
     case ACTIONS.ADD_ITEM_TO_ORDER:
       return {
         ...state,
@@ -103,7 +121,38 @@ function appReducer(state, action) {
             { ...state.currentItem, id: Date.now(), type: 'build-your-own' },
           ],
         },
-        currentItem: { protein: null, format: null, addons: [] },
+        currentItem: { protein: null, format: null, addons: [], exclusions: [] },
+      };
+
+    case ACTIONS.SET_PENDING_ITEM:
+      return {
+        ...state,
+        pendingItem: { ...action.payload, exclusions: [] },
+      };
+
+    case ACTIONS.TOGGLE_PENDING_EXCLUSION: {
+      if (!state.pendingItem) return state;
+      const exclusions = state.pendingItem.exclusions.includes(action.payload)
+        ? state.pendingItem.exclusions.filter((id) => id !== action.payload)
+        : [...state.pendingItem.exclusions, action.payload];
+      return {
+        ...state,
+        pendingItem: { ...state.pendingItem, exclusions },
+      };
+    }
+
+    case ACTIONS.ADD_PENDING_ITEM_TO_ORDER:
+      if (!state.pendingItem) return state;
+      return {
+        ...state,
+        order: {
+          ...state.order,
+          items: [
+            ...state.order.items,
+            { ...state.pendingItem, id: Date.now(), type: 'menu-item' },
+          ],
+        },
+        pendingItem: null,
       };
 
     case ACTIONS.ADD_MENU_ITEM_TO_ORDER:
@@ -166,7 +215,8 @@ function appReducer(state, action) {
         ...state,
         currentStep: 'welcome',
         selectedCategory: null,
-        currentItem: { protein: null, format: null, addons: [] },
+        currentItem: { protein: null, format: null, addons: [], exclusions: [] },
+        pendingItem: null,
         order: {
           items: [],
           guestInfo: { roomNumber: '', lastName: '', allergies: '' },
@@ -177,7 +227,7 @@ function appReducer(state, action) {
     case ACTIONS.RESET_CURRENT_ITEM:
       return {
         ...state,
-        currentItem: { protein: null, format: null, addons: [] },
+        currentItem: { protein: null, format: null, addons: [], exclusions: [] },
       };
 
     default:
@@ -227,6 +277,23 @@ export function AppProvider({ children }) {
     dispatch({ type: ACTIONS.TOGGLE_ADDON, payload: addonId });
   }, []);
 
+  const toggleExclusion = useCallback((exclusionId) => {
+    dispatch({ type: ACTIONS.TOGGLE_EXCLUSION, payload: exclusionId });
+  }, []);
+
+  // Pending item actions (for menu items before adding)
+  const setPendingItem = useCallback((item) => {
+    dispatch({ type: ACTIONS.SET_PENDING_ITEM, payload: item });
+  }, []);
+
+  const togglePendingExclusion = useCallback((exclusionId) => {
+    dispatch({ type: ACTIONS.TOGGLE_PENDING_EXCLUSION, payload: exclusionId });
+  }, []);
+
+  const addPendingItemToOrder = useCallback(() => {
+    dispatch({ type: ACTIONS.ADD_PENDING_ITEM_TO_ORDER });
+  }, []);
+
   // Order actions
   const addItemToOrder = useCallback(() => {
     dispatch({ type: ACTIONS.ADD_ITEM_TO_ORDER });
@@ -272,6 +339,12 @@ export function AppProvider({ children }) {
     setProtein,
     setFormat,
     toggleAddon,
+    toggleExclusion,
+
+    // Pending item (for menu item modifications)
+    setPendingItem,
+    togglePendingExclusion,
+    addPendingItemToOrder,
 
     // Order management
     addItemToOrder,

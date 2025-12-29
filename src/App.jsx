@@ -3,6 +3,7 @@ import LanguageToggle from './components/LanguageToggle';
 import Welcome from './components/Welcome';
 import MenuPage from './components/MenuPage';
 import CategoryPage from './components/CategoryPage';
+import Modifications from './components/Modifications';
 import ProteinStep from './components/ProteinStep';
 import FormatStep from './components/FormatStep';
 import AddonsStep from './components/AddonsStep';
@@ -32,6 +33,8 @@ function AppContent() {
         return <MenuPage />;
       case 'category':
         return <CategoryPage />;
+      case 'modifications':
+        return <Modifications />;
       case 'protein':
         return <ProteinStep />;
       case 'format':

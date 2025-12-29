@@ -64,6 +64,15 @@
   line-height: var(--line-height-tight);
 }
 
+.itemExclusions {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: #b91c1c;
+  margin: var(--spacing-xs) 0 0 0;
+  line-height: var(--line-height-normal);
+}
+
 .itemAddons {
   font-family: var(--font-body);
   font-size: var(--font-size-sm);

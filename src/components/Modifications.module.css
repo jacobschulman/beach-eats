@@ -1,0 +1,131 @@
+.modificationsPage {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-cream);
+}
+
+.header {
+  padding: 16px 24px;
+  background: var(--color-cream);
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--color-terracotta);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+}
+
+.backArrow {
+  font-size: 18px;
+}
+
+.titles {
+  text-align: left;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--color-charcoal);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--color-terracotta);
+  margin: 8px 0 0 0;
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.prompt {
+  font-size: 15px;
+  color: var(--color-charcoal);
+  opacity: 0.7;
+  margin: 0 0 24px 0;
+}
+
+.exclusionsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.exclusionButton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #fff;
+  border: 2px solid #e5e0d8;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exclusionButton:hover {
+  border-color: var(--color-terracotta);
+}
+
+.exclusionButton.selected {
+  background: var(--color-terracotta);
+  border-color: var(--color-terracotta);
+}
+
+.exclusionButton.selected .exclusionName {
+  color: #fff;
+}
+
+.exclusionName {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-charcoal);
+}
+
+.checkmark {
+  font-size: 18px;
+  color: #fff;
+}
+
+.footer {
+  padding: 16px 24px 32px;
+  background: var(--color-cream);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.addButton {
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--color-terracotta);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.addButton:hover {
+  transform: translateY(-1px);
+}
+
+.addButton:active {
+  transform: translateY(0);
+}

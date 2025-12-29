@@ -78,10 +78,12 @@ export default function ChefDemo() {
     allergy: order.guestInfo?.allergies || null,
     items: (order.items || []).map(item => {
       const formatted = formatOrderItem(item, 'en');
+      const addons = formatted.addons.map(a => `+ ${a}`);
+      const exclusions = (formatted.exclusions || []).map(e => `NO ${e.replace('No ', '')}`);
       return {
         qty: 1,
         name: formatted.title,
-        mods: formatted.addons.map(a => `+ ${a}`),
+        mods: [...exclusions, ...addons],
       };
     }),
     time: order.placedAt
@@ -165,7 +167,12 @@ export default function ChefDemo() {
                     {item.mods.length > 0 && (
                       <div className={styles.mods}>
                         {item.mods.map((mod, i) => (
-                          <span key={i} className={styles.mod}>{mod}</span>
+                          <span
+                            key={i}
+                            className={mod.startsWith('NO ') ? styles.modExclusion : styles.mod}
+                          >
+                            {mod}
+                          </span>
                         ))}
                       </div>
                     )}

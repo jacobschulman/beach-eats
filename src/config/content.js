@@ -118,6 +118,20 @@ const content = {
         es: 'Acompañamientos opcionales',
       },
     },
+    modifications: {
+      title: {
+        en: 'Modifications',
+        es: 'Modificaciones',
+      },
+      subtitle: {
+        en: 'Any changes to your dish?',
+        es: '¿Algún cambio a tu platillo?',
+      },
+      none: {
+        en: 'No modifications',
+        es: 'Sin modificaciones',
+      },
+    },
     summary: {
       title: {
         en: 'Your Order',
