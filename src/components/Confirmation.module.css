@@ -131,6 +131,23 @@
   border-color: var(--color-primary);
 }
 
+.kitchenButton {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-wide);
+  color: #fff;
+  background: #1a1a2e;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.kitchenButton:hover {
+  background: #2d3748;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

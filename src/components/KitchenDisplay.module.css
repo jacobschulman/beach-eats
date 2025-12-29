@@ -1,0 +1,315 @@
+.kitchenDisplay {
+  min-height: 100dvh;
+  background: #1a1a2e;
+  color: #ffffff;
+  font-family: 'Monaco', 'Consolas', monospace;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: #16213e;
+  border-bottom: 2px solid #0f3460;
+}
+
+.backButton {
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #4a5568;
+  color: #a0aec0;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backButton:hover {
+  background: #2d3748;
+  color: #fff;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.toggleButton {
+  padding: 8px 16px;
+  background: #3182ce;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggleButton:hover {
+  background: #2c5282;
+}
+
+.displayGrid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 900px) {
+  .displayGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.orderTicket {
+  background: #ffffff;
+  color: #1a1a2e;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.statusBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.statusLabel {
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.timer {
+  font-size: 24px;
+  font-family: 'Monaco', monospace;
+}
+
+.ticketHeader {
+  padding: 20px;
+  border-bottom: 2px dashed #e2e8f0;
+  text-align: center;
+}
+
+.orderNumber {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.locationIcon {
+  font-size: 28px;
+}
+
+.locationText {
+  text-transform: uppercase;
+}
+
+.guestName {
+  font-size: 18px;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.allergyAlert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #fed7d7;
+  border-left: 4px solid #e53e3e;
+}
+
+.allergyIcon {
+  font-size: 24px;
+}
+
+.allergyText {
+  font-size: 16px;
+  font-weight: 700;
+  color: #c53030;
+  text-transform: uppercase;
+}
+
+.itemsContainer {
+  padding: 20px;
+}
+
+.ticketItem {
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ticketItem:last-child {
+  border-bottom: none;
+}
+
+.itemQuantity {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a2e;
+  min-width: 50px;
+}
+
+.itemDetails {
+  flex: 1;
+}
+
+.itemName {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.itemMods {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mod {
+  font-size: 16px;
+  color: #4a5568;
+  padding-left: 8px;
+}
+
+.ticketFooter {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f7fafc;
+  border-top: 2px dashed #e2e8f0;
+}
+
+.itemCount {
+  font-size: 16px;
+  color: #718096;
+}
+
+.orderTime {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.actionButtons {
+  padding: 20px;
+  background: #edf2f7;
+}
+
+.actionButton {
+  width: 100%;
+  padding: 16px;
+  background: #1a1a2e;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButton:hover:not(:disabled) {
+  background: #2d3748;
+}
+
+.otherOrders {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.otherOrdersTitle {
+  font-size: 14px;
+  color: #a0aec0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+}
+
+.miniTicket {
+  background: #16213e;
+  border-left: 4px solid;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.miniHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.miniItems {
+  font-size: 13px;
+  color: #a0aec0;
+  margin-bottom: 8px;
+}
+
+.miniStatus {
+  font-size: 12px;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Raw Data View */
+.rawDataContainer {
+  padding: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.rawDataTitle {
+  font-size: 20px;
+  color: #e2e8f0;
+  margin: 0 0 8px 0;
+}
+
+.rawDataSubtitle {
+  font-size: 14px;
+  color: #718096;
+  margin: 0 0 24px 0;
+}
+
+.rawData {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 24px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #7ee787;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

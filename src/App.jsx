@@ -9,6 +9,7 @@ import AddonsStep from './components/AddonsStep';
 import OrderSummary from './components/OrderSummary';
 import Checkout from './components/Checkout';
 import Confirmation from './components/Confirmation';
+import KitchenDisplay from './components/KitchenDisplay';
 import './App.css';
 
 function AppContent() {
@@ -34,6 +35,8 @@ function AppContent() {
         return <Checkout />;
       case 'confirmation':
         return <Confirmation />;
+      case 'kitchen':
+        return <KitchenDisplay />;
       default:
         return <Welcome />;
     }
