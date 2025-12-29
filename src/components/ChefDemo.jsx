@@ -41,6 +41,11 @@ export default function ChefDemo() {
     return () => clearInterval(interval);
   }, [orderStatuses]);
 
+  // Set page title for kitchen view
+  useEffect(() => {
+    document.title = 'Beach Eats POS';
+  }, []);
+
   // Update timer every second
   const [currentTime, setCurrentTime] = useState(Date.now());
   useEffect(() => {
