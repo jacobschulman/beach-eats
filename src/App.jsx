@@ -10,10 +10,19 @@ import OrderSummary from './components/OrderSummary';
 import Checkout from './components/Checkout';
 import Confirmation from './components/Confirmation';
 import KitchenDisplay from './components/KitchenDisplay';
+import ChefDemo from './components/ChefDemo';
 import './App.css';
+
+// Check for chef demo mode via URL param
+const isChefDemo = new URLSearchParams(window.location.search).has('chef');
 
 function AppContent() {
   const { currentStep } = useApp();
+
+  // Chef demo mode - direct kitchen view
+  if (isChefDemo) {
+    return <ChefDemo />;
+  }
 
   const renderStep = () => {
     switch (currentStep) {
