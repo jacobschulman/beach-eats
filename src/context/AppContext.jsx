@@ -136,14 +136,30 @@ function appReducer(state, action) {
         },
       };
 
-    case ACTIONS.PLACE_ORDER:
+    case ACTIONS.PLACE_ORDER: {
+      const orderNumber = `SC${Date.now().toString().slice(-6)}`;
+      const completedOrder = {
+        ...state.order,
+        orderNumber,
+        placedAt: new Date().toISOString(),
+      };
+      // Save to localStorage for kitchen display
+      try {
+        const existingOrders = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
+        existingOrders.unshift(completedOrder);
+        // Keep last 20 orders
+        localStorage.setItem('kitchenOrders', JSON.stringify(existingOrders.slice(0, 20)));
+      } catch (e) {
+        console.warn('Could not save to localStorage', e);
+      }
       return {
         ...state,
         order: {
           ...state.order,
-          orderNumber: `SC${Date.now().toString().slice(-6)}`,
+          orderNumber,
         },
       };
+    }
 
     case ACTIONS.RESET_ORDER:
       return {

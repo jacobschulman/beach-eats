@@ -1,50 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { formatOrderItem } from '../config/menu';
 import styles from './ChefDemo.module.css';
-
-const demoOrders = [
-  {
-    id: 1,
-    orderNumber: 'SC847294',
-    location: 'Palapa 7',
-    guest: 'MORRISON',
-    allergy: 'SHELLFISH ALLERGY',
-    items: [
-      { qty: 1, name: 'Rib Eye Tacos', mods: ['+ Guacamole', '+ Salsa Verde'] },
-      { qty: 1, name: 'Kale & Quinoa Salad', mods: [] },
-    ],
-    time: '12:34 PM',
-    status: 'new',
-    timer: '0:00',
-  },
-  {
-    id: 2,
-    orderNumber: 'SC847293',
-    location: 'Room 312',
-    guest: 'CHEN',
-    allergy: null,
-    items: [
-      { qty: 2, name: 'Asada Tacos', mods: ['+ Pickled Onion'] },
-      { qty: 1, name: 'Guacamole', mods: [] },
-      { qty: 1, name: 'Coco Sorbet', mods: [] },
-    ],
-    time: '12:31 PM',
-    status: 'preparing',
-    timer: '3:22',
-  },
-  {
-    id: 3,
-    orderNumber: 'SC847291',
-    location: 'Pool Bar',
-    guest: 'WILLIAMS',
-    allergy: 'GLUTEN FREE - CELIAC',
-    items: [
-      { qty: 1, name: 'Shrimp Salad', mods: ['+ Crema', '+ Queso'] },
-    ],
-    time: '12:28 PM',
-    status: 'ready',
-    timer: '6:45',
-  },
-];
 
 const statusConfig = {
   new: { color: '#e53e3e', label: 'NEW', next: 'preparing', action: 'START' },
@@ -54,21 +10,90 @@ const statusConfig = {
 };
 
 export default function ChefDemo() {
-  const [orders, setOrders] = useState(demoOrders);
+  const [orders, setOrders] = useState([]);
+  const [orderStatuses, setOrderStatuses] = useState({});
 
-  const updateStatus = (orderId) => {
-    setOrders(orders.map(order => {
-      if (order.id === orderId) {
-        const nextStatus = statusConfig[order.status].next;
-        if (nextStatus) {
-          return { ...order, status: nextStatus };
-        }
+  // Load orders from localStorage and poll for updates
+  useEffect(() => {
+    const loadOrders = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
+        setOrders(stored);
+        // Initialize status for new orders
+        stored.forEach(order => {
+          if (order.orderNumber && !orderStatuses[order.orderNumber]) {
+            setOrderStatuses(prev => {
+              if (!prev[order.orderNumber]) {
+                return { ...prev, [order.orderNumber]: 'new' };
+              }
+              return prev;
+            });
+          }
+        });
+      } catch (e) {
+        console.warn('Could not load orders', e);
       }
-      return order;
-    }));
+    };
+
+    loadOrders();
+    // Poll every 2 seconds for new orders
+    const interval = setInterval(loadOrders, 2000);
+    return () => clearInterval(interval);
+  }, [orderStatuses]);
+
+  // Update timer every second
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Format timer display
+  const getTimerDisplay = (placedAt) => {
+    if (!placedAt) return '0:00';
+    const elapsed = Math.floor((currentTime - new Date(placedAt).getTime()) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const activeOrders = orders.filter(o => o.status !== 'done');
+  const updateStatus = (orderNum) => {
+    const currentStatus = orderStatuses[orderNum] || 'new';
+    const nextStatus = statusConfig[currentStatus].next;
+    if (nextStatus) {
+      setOrderStatuses(prev => ({ ...prev, [orderNum]: nextStatus }));
+    }
+  };
+
+  // Transform orders for display
+  const displayOrders = orders.map(order => ({
+    orderNumber: order.orderNumber,
+    location: order.guestInfo?.roomNumber || 'Beach',
+    guest: order.guestInfo?.lastName?.toUpperCase() || 'GUEST',
+    allergy: order.guestInfo?.allergies || null,
+    items: (order.items || []).map(item => {
+      const formatted = formatOrderItem(item, 'en');
+      return {
+        qty: 1,
+        name: formatted.title,
+        mods: formatted.addons.map(a => `+ ${a}`),
+      };
+    }),
+    time: order.placedAt
+      ? new Date(order.placedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      : '--:--',
+    placedAt: order.placedAt,
+    status: orderStatuses[order.orderNumber] || 'new',
+  }));
+
+  const activeOrders = displayOrders.filter(o => o.status !== 'done');
+  const noOrders = activeOrders.length === 0;
+
+  const clearOrders = () => {
+    localStorage.removeItem('kitchenOrders');
+    setOrders([]);
+    setOrderStatuses({});
+  };
 
   return (
     <div className={styles.kitchen}>
@@ -88,67 +113,83 @@ export default function ChefDemo() {
         </div>
       </header>
 
-      <div className={styles.ordersGrid}>
-        {orders.filter(o => o.status !== 'done').map(order => (
-          <div key={order.id} className={styles.ticket}>
-            <div
-              className={styles.ticketStatus}
-              style={{ backgroundColor: statusConfig[order.status].color }}
-            >
-              <span className={styles.statusLabel}>{statusConfig[order.status].label}</span>
-              <span className={styles.timer}>{order.timer}</span>
-            </div>
-
-            <div className={styles.ticketHeader}>
-              <span className={styles.orderNum}>{order.orderNumber}</span>
-              <span className={styles.location}>{order.location}</span>
-            </div>
-
-            <div className={styles.guestName}>{order.guest}</div>
-
-            {order.allergy && (
-              <div className={styles.allergy}>
-                <span className={styles.allergyIcon}>⚠</span>
-                {order.allergy}
+      {noOrders ? (
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>📋</div>
+          <h2 className={styles.emptyTitle}>Waiting for Orders</h2>
+          <p className={styles.emptyText}>
+            Orders will appear here instantly when guests place them.
+          </p>
+          <p className={styles.emptyHint}>
+            Open the guest app in another window to place a test order
+          </p>
+        </div>
+      ) : (
+        <div className={styles.ordersGrid}>
+          {activeOrders.map(orderItem => (
+            <div key={orderItem.orderNumber} className={styles.ticket}>
+              <div
+                className={styles.ticketStatus}
+                style={{ backgroundColor: statusConfig[orderItem.status].color }}
+              >
+                <span className={styles.statusLabel}>{statusConfig[orderItem.status].label}</span>
+                <span className={styles.timer}>{getTimerDisplay(orderItem.placedAt)}</span>
               </div>
-            )}
 
-            <div className={styles.items}>
-              {order.items.map((item, idx) => (
-                <div key={idx} className={styles.item}>
-                  <div className={styles.itemMain}>
-                    <span className={styles.qty}>{item.qty}×</span>
-                    <span className={styles.itemName}>{item.name}</span>
-                  </div>
-                  {item.mods.length > 0 && (
-                    <div className={styles.mods}>
-                      {item.mods.map((mod, i) => (
-                        <span key={i} className={styles.mod}>{mod}</span>
-                      ))}
-                    </div>
-                  )}
+              <div className={styles.ticketHeader}>
+                <span className={styles.orderNum}>{orderItem.orderNumber}</span>
+                <span className={styles.location}>{orderItem.location}</span>
+              </div>
+
+              <div className={styles.guestName}>{orderItem.guest}</div>
+
+              {orderItem.allergy && (
+                <div className={styles.allergy}>
+                  <span className={styles.allergyIcon}>⚠</span>
+                  {orderItem.allergy.toUpperCase()}
                 </div>
-              ))}
-            </div>
-
-            <div className={styles.ticketFooter}>
-              <span className={styles.orderTime}>{order.time}</span>
-              {statusConfig[order.status].action && (
-                <button
-                  className={styles.actionBtn}
-                  onClick={() => updateStatus(order.id)}
-                  style={{ backgroundColor: statusConfig[order.status].color }}
-                >
-                  {statusConfig[order.status].action}
-                </button>
               )}
+
+              <div className={styles.items}>
+                {orderItem.items.map((item, idx) => (
+                  <div key={idx} className={styles.item}>
+                    <div className={styles.itemMain}>
+                      <span className={styles.qty}>{item.qty}×</span>
+                      <span className={styles.itemName}>{item.name}</span>
+                    </div>
+                    {item.mods.length > 0 && (
+                      <div className={styles.mods}>
+                        {item.mods.map((mod, i) => (
+                          <span key={i} className={styles.mod}>{mod}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className={styles.ticketFooter}>
+                <span className={styles.orderTime}>{orderItem.time}</span>
+                {statusConfig[orderItem.status].action && (
+                  <button
+                    className={styles.actionBtn}
+                    onClick={() => updateStatus(orderItem.orderNumber)}
+                    style={{ backgroundColor: statusConfig[orderItem.status].color }}
+                  >
+                    {statusConfig[orderItem.status].action}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <div className={styles.footer}>
-        <p>Orders appear instantly from guest phones • Tap status to update • Allergy alerts auto-highlighted</p>
+        <p>
+          Orders sync in real-time • Tap status to update •
+          <button onClick={clearOrders} className={styles.clearBtn}>Clear All</button>
+        </p>
       </div>
     </div>
   );
