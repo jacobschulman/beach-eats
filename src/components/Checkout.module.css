@@ -1,0 +1,114 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.label {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.input {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-md);
+  transition: all var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--color-secondary);
+  opacity: 0.6;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.input:hover:not(:focus) {
+  border-color: var(--color-border-hover);
+}
+
+.allergySection {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: rgba(139, 115, 85, 0.05);
+  border: 1px solid var(--color-border);
+}
+
+.allergyHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.allergyIcon {
+  font-size: var(--font-size-md);
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+.allergyTitle {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.allergyNote {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary);
+  margin: 0 0 var(--spacing-md) 0;
+  line-height: var(--line-height-normal);
+}
+
+.textarea {
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-primary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-md);
+  transition: all var(--transition-fast);
+  resize: vertical;
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.textarea::placeholder {
+  color: var(--color-secondary);
+  opacity: 0.6;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.textarea:hover:not(:focus) {
+  border-color: var(--color-border-hover);
+}

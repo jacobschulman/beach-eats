@@ -1,0 +1,136 @@
+.welcome {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-xl);
+  background: var(--color-background);
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  max-width: 400px;
+  animation: fadeIn var(--transition-slower) ease-out;
+}
+
+.brandingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.greeting {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  margin: 0;
+}
+
+.resortName {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-tight);
+  color: var(--color-primary);
+  margin: 0;
+  letter-spacing: var(--tracking-tight);
+}
+
+@media (min-width: 480px) {
+  .resortName {
+    font-size: var(--font-size-3xl);
+  }
+}
+
+.byline {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  margin: 0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  max-width: 200px;
+  margin: var(--spacing-sm) 0;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.dividerIcon {
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+}
+
+.subtitle {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-normal);
+  font-style: italic;
+  color: var(--color-primary);
+  margin: 0;
+}
+
+.ctaButton {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-button-primary-text);
+  background: var(--color-button-primary);
+  border: 1px solid var(--color-button-primary);
+  padding: var(--spacing-md) var(--spacing-2xl);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  margin-top: var(--spacing-md);
+}
+
+.ctaButton:hover {
+  background: transparent;
+  color: var(--color-button-primary);
+}
+
+.ctaButton:active {
+  transform: scale(0.98);
+}
+
+.tagline {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-light);
+  font-style: italic;
+  color: var(--color-secondary);
+  margin: var(--spacing-xl) 0 0 0;
+  max-width: 280px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

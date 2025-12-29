@@ -1,0 +1,150 @@
+.card {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  text-align: left;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  border-color: var(--color-border-hover);
+  transform: translateY(-1px);
+}
+
+.card.selected {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  color: var(--color-primary);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.card:hover .icon,
+.card.selected .icon {
+  opacity: 1;
+}
+
+.icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-primary);
+  margin: 0;
+  line-height: var(--line-height-tight);
+}
+
+.dietaryBadges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.5px;
+  color: var(--color-secondary);
+  background: rgba(139, 115, 85, 0.1);
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.description {
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-secondary);
+  margin: var(--spacing-xs) 0 0 0;
+  line-height: var(--line-height-normal);
+}
+
+.indicator {
+  flex-shrink: 0;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.card.selected .radio {
+  border-color: var(--color-primary);
+}
+
+.radioDot {
+  width: 10px;
+  height: 10px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  animation: scaleIn var(--transition-fast) ease-out;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-fast);
+}
+
+.card.selected .checkbox {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.checkmark {
+  color: var(--color-button-primary-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  animation: scaleIn var(--transition-fast) ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}

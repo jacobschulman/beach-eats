@@ -1,0 +1,22 @@
+.toggle {
+  position: fixed;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  z-index: 100;
+}
+
+.toggle:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
