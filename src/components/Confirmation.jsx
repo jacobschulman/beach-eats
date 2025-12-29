@@ -2,14 +2,10 @@ import { useApp } from '../context/AppContext';
 import styles from './Confirmation.module.css';
 
 export default function Confirmation() {
-  const { t, order, resetOrder, goToStep } = useApp();
+  const { t, order, resetOrder } = useApp();
 
   const handleNewOrder = () => {
     resetOrder();
-  };
-
-  const handleViewKitchen = () => {
-    goToStep('kitchen');
   };
 
   return (
@@ -41,10 +37,6 @@ export default function Confirmation() {
 
         <button className={styles.newOrderButton} onClick={handleNewOrder}>
           {t('steps.confirmation.newOrder')}
-        </button>
-
-        <button className={styles.kitchenButton} onClick={handleViewKitchen}>
-          View Kitchen Display (Demo)
         </button>
       </div>
     </div>
