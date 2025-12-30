@@ -40,6 +40,7 @@ export default function SelectionCard({
   icon,
   dietary,
   language = 'en',
+  price,
 }) {
   return (
     <button
@@ -51,6 +52,7 @@ export default function SelectionCard({
       <div className={styles.content}>
         <div className={styles.header}>
           <h3 className={styles.name}>{name}</h3>
+          {price && <span className={styles.price}>{price}</span>}
           <DietaryBadges dietary={dietary} language={language} />
         </div>
         {description && <p className={styles.description}>{description}</p>}

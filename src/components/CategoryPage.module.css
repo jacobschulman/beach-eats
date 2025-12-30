@@ -154,6 +154,15 @@
   line-height: var(--line-height-relaxed);
 }
 
+.itemPrice {
+  display: inline-block;
+  margin-top: var(--spacing-xs);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
 .addButton {
   flex-shrink: 0;
   display: flex;

@@ -1,5 +1,6 @@
 import { useApp } from '../context/AppContext';
-import { menuCategories, menuItems, icons, dietaryFlags } from '../config/menu';
+import { menuCategories, icons, dietaryFlags } from '../config/menu';
+import { useMenu } from '../hooks/useMenu';
 import styles from './CategoryPage.module.css';
 
 function MenuIcon({ iconName }) {
@@ -34,9 +35,10 @@ function DietaryBadges({ dietary = [], language = 'en' }) {
 
 export default function CategoryPage() {
   const { t, language, selectedCategory, goToStep, setPendingItem } = useApp();
+  const { getAvailableMenuItems, formatPrice } = useMenu();
 
   const category = menuCategories.find((c) => c.id === selectedCategory);
-  const items = menuItems[selectedCategory] || [];
+  const items = getAvailableMenuItems(selectedCategory);
 
   const handleBack = () => {
     goToStep('menu');
@@ -82,6 +84,9 @@ export default function CategoryPage() {
                 <p className={styles.itemDescription}>
                   {item.description[language]}
                 </p>
+                {item.price > 0 && (
+                  <span className={styles.itemPrice}>${item.price}</span>
+                )}
               </div>
               <span className={styles.addButton}>+</span>
             </button>

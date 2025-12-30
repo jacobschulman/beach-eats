@@ -1,11 +1,12 @@
 import { useApp } from '../context/AppContext';
-import { formats } from '../config/menu';
+import { useMenu } from '../hooks/useMenu';
 import StepLayout from './StepLayout';
 import SelectionCard from './SelectionCard';
 import styles from './SelectionStep.module.css';
 
 export default function FormatStep() {
   const { t, language, currentItem, setFormat, goToStep } = useApp();
+  const { availableFormats, formatPrice } = useMenu();
 
   const handleSelect = (formatId) => {
     setFormat(formatId);
@@ -33,7 +34,7 @@ export default function FormatStep() {
       hideContinue
     >
       <div className={styles.grid}>
-        {formats.map((format) => (
+        {availableFormats.map((format) => (
           <SelectionCard
             key={format.id}
             name={format.name[language]}
@@ -44,6 +45,7 @@ export default function FormatStep() {
             icon={format.icon}
             dietary={format.dietary}
             language={language}
+            price={formatPrice(format.price)}
           />
         ))}
       </div>

@@ -1,11 +1,12 @@
 import { useApp } from '../context/AppContext';
-import { addons } from '../config/menu';
+import { useMenu } from '../hooks/useMenu';
 import StepLayout from './StepLayout';
 import SelectionCard from './SelectionCard';
 import styles from './SelectionStep.module.css';
 
 export default function AddonsStep() {
   const { t, language, currentItem, toggleAddon, goToStep, addItemToOrder } = useApp();
+  const { availableAddons, formatPrice } = useMenu();
 
   const handleToggle = (addonId) => {
     toggleAddon(addonId);
@@ -30,7 +31,7 @@ export default function AddonsStep() {
       continueDisabled={false}
     >
       <div className={styles.grid}>
-        {addons.map((addon) => (
+        {availableAddons.map((addon) => (
           <SelectionCard
             key={addon.id}
             name={addon.name[language]}
@@ -41,6 +42,7 @@ export default function AddonsStep() {
             icon={addon.icon}
             dietary={addon.dietary}
             language={language}
+            price={formatPrice(addon.price)}
           />
         ))}
       </div>

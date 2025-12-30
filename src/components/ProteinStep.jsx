@@ -1,11 +1,12 @@
 import { useApp } from '../context/AppContext';
-import { proteins } from '../config/menu';
+import { useMenu } from '../hooks/useMenu';
 import StepLayout from './StepLayout';
 import SelectionCard from './SelectionCard';
 import styles from './SelectionStep.module.css';
 
 export default function ProteinStep() {
   const { t, language, currentItem, setProtein, goToStep, order } = useApp();
+  const { availableProteins, formatPrice } = useMenu();
 
   const handleSelect = (proteinId) => {
     setProtein(proteinId);
@@ -37,7 +38,7 @@ export default function ProteinStep() {
       hideContinue
     >
       <div className={styles.grid}>
-        {proteins.map((protein) => (
+        {availableProteins.map((protein) => (
           <SelectionCard
             key={protein.id}
             name={protein.name[language]}
@@ -48,6 +49,7 @@ export default function ProteinStep() {
             icon={protein.icon}
             dietary={protein.dietary}
             language={language}
+            price={formatPrice(protein.price)}
           />
         ))}
       </div>

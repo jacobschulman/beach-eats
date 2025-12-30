@@ -12,13 +12,21 @@ import Checkout from './components/Checkout';
 import Confirmation from './components/Confirmation';
 import KitchenDisplay from './components/KitchenDisplay';
 import ChefDemo from './components/ChefDemo';
+import MenuAdmin from './components/MenuAdmin';
 import './App.css';
 
-// Check for chef demo mode via URL param
-const isChefDemo = new URLSearchParams(window.location.search).has('chef');
+// Check for special modes via URL params
+const urlParams = new URLSearchParams(window.location.search);
+const isChefDemo = urlParams.has('chef');
+const isAdmin = urlParams.has('admin');
 
 function AppContent() {
   const { currentStep } = useApp();
+
+  // Admin mode - menu management
+  if (isAdmin) {
+    return <MenuAdmin />;
+  }
 
   // Chef demo mode - direct kitchen view
   if (isChefDemo) {
