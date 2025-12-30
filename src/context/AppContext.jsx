@@ -186,6 +186,10 @@ function appReducer(state, action) {
       };
 
     case ACTIONS.PLACE_ORDER: {
+      // Prevent duplicate orders if already placed
+      if (state.order.orderNumber) {
+        return state;
+      }
       const orderNumber = `SC${Date.now().toString().slice(-6)}`;
       const completedOrder = {
         ...state.order,
@@ -195,9 +199,12 @@ function appReducer(state, action) {
       // Save to localStorage for kitchen display
       try {
         const existingOrders = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
-        existingOrders.unshift(completedOrder);
-        // Keep last 20 orders
-        localStorage.setItem('kitchenOrders', JSON.stringify(existingOrders.slice(0, 20)));
+        // Check for duplicate order numbers before adding
+        if (!existingOrders.some(o => o.orderNumber === orderNumber)) {
+          existingOrders.unshift(completedOrder);
+          // Keep last 20 orders
+          localStorage.setItem('kitchenOrders', JSON.stringify(existingOrders.slice(0, 20)));
+        }
       } catch (e) {
         console.warn('Could not save to localStorage', e);
       }
