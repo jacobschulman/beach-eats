@@ -18,10 +18,22 @@ export default function ChefDemo() {
     const loadOrders = () => {
       try {
         const stored = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
-        // Filter out any malformed orders
-        const validOrders = stored.filter(order =>
-          order && order.orderNumber && order.items && Array.isArray(order.items)
-        );
+        // Filter out malformed orders and deduplicate by orderNumber
+        const seen = new Set();
+        const validOrders = stored.filter(order => {
+          if (!order || !order.orderNumber || !order.items || !Array.isArray(order.items)) {
+            return false;
+          }
+          if (seen.has(order.orderNumber)) {
+            return false;
+          }
+          seen.add(order.orderNumber);
+          return true;
+        });
+        // Save deduplicated list back to localStorage
+        if (validOrders.length !== stored.length) {
+          localStorage.setItem('kitchenOrders', JSON.stringify(validOrders));
+        }
         setOrders(validOrders);
         // Initialize status for new orders
         setOrderStatuses(prev => {
