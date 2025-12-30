@@ -64,6 +64,11 @@
   line-height: var(--line-height-tight);
 }
 
+.qty {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-terracotta, #c45d3a);
+}
+
 .itemExclusions {
   font-family: var(--font-body);
   font-size: var(--font-size-sm);

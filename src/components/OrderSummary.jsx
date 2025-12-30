@@ -21,6 +21,27 @@ export default function OrderSummary() {
 
   const isEmpty = order.items.length === 0;
 
+  // Group items by title + exclusions + addons
+  const groupedItems = [];
+  const groupMap = {};
+  order.items.forEach((item) => {
+    const formatted = formatOrderItem(item, language);
+    const key = `${formatted.title}|${(formatted.exclusions || []).join(',')}|${formatted.addons.join(',')}`;
+    if (groupMap[key]) {
+      groupMap[key].qty += 1;
+      groupMap[key].ids.push(item.id);
+    } else {
+      groupMap[key] = {
+        qty: 1,
+        ids: [item.id],
+        title: formatted.title,
+        exclusions: formatted.exclusions || [],
+        addons: formatted.addons,
+      };
+      groupedItems.push(groupMap[key]);
+    }
+  });
+
   return (
     <StepLayout
       title={t('steps.summary.title')}
@@ -40,33 +61,33 @@ export default function OrderSummary() {
         ) : (
           <>
             <ul className={styles.itemList}>
-              {order.items.map((item) => {
-                const formatted = formatOrderItem(item, language);
-                return (
-                  <li key={item.id} className={styles.item}>
-                    <div className={styles.itemContent}>
-                      <h3 className={styles.itemTitle}>{formatted.title}</h3>
-                      {formatted.exclusions && formatted.exclusions.length > 0 && (
-                        <p className={styles.itemExclusions}>
-                          {formatted.exclusions.join(', ')}
-                        </p>
-                      )}
-                      {formatted.addons.length > 0 && (
-                        <p className={styles.itemAddons}>
-                          {t('with')} {formatted.addons.join(', ')}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      className={styles.removeButton}
-                      onClick={() => handleRemoveItem(item.id)}
-                      aria-label={t('ui.remove')}
-                    >
-                      &times;
-                    </button>
-                  </li>
-                );
-              })}
+              {groupedItems.map((group) => (
+                <li key={group.ids[0]} className={styles.item}>
+                  <div className={styles.itemContent}>
+                    <h3 className={styles.itemTitle}>
+                      {group.qty > 1 && <span className={styles.qty}>{group.qty}× </span>}
+                      {group.title}
+                    </h3>
+                    {group.exclusions.length > 0 && (
+                      <p className={styles.itemExclusions}>
+                        {group.exclusions.join(', ')}
+                      </p>
+                    )}
+                    {group.addons.length > 0 && (
+                      <p className={styles.itemAddons}>
+                        {t('with')} {group.addons.join(', ')}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    className={styles.removeButton}
+                    onClick={() => handleRemoveItem(group.ids[group.ids.length - 1])}
+                    aria-label={t('ui.remove')}
+                  >
+                    −
+                  </button>
+                </li>
+              ))}
             </ul>
 
             <button className={styles.addMoreButton} onClick={handleAddMore}>

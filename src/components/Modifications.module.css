@@ -109,6 +109,62 @@
   border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
+.quantityRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.quantityLabel {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-charcoal);
+}
+
+.quantityControl {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #e5e0d8;
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.qtyBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--color-terracotta);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.qtyBtn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.qtyBtn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.qtyValue {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-charcoal);
+  min-width: 32px;
+  text-align: center;
+}
+
 .addButton {
   width: 100%;
   padding: 16px 24px;

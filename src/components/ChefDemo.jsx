@@ -93,16 +93,27 @@ export default function ChefDemo() {
     location: order.guestInfo?.roomNumber || 'Beach',
     guest: order.guestInfo?.lastName?.toUpperCase() || 'GUEST',
     allergy: order.guestInfo?.allergies || null,
-    items: (order.items || []).map(item => {
-      const formatted = formatOrderItem(item, 'en');
-      const addons = formatted.addons.map(a => `+ ${a}`);
-      const exclusions = (formatted.exclusions || []).map(e => `NO ${e.replace('No ', '')}`);
-      return {
-        qty: 1,
-        name: formatted.title,
-        mods: [...exclusions, ...addons],
-      };
-    }),
+    items: (() => {
+      // Group items by name + mods combination
+      const grouped = {};
+      (order.items || []).forEach(item => {
+        const formatted = formatOrderItem(item, 'en');
+        const addons = formatted.addons.map(a => `+ ${a}`);
+        const exclusions = (formatted.exclusions || []).map(e => `NO ${e.replace('No ', '')}`);
+        const mods = [...exclusions, ...addons];
+        const key = `${formatted.title}|${mods.join(',')}`;
+        if (grouped[key]) {
+          grouped[key].qty += 1;
+        } else {
+          grouped[key] = {
+            qty: 1,
+            name: formatted.title,
+            mods,
+          };
+        }
+      });
+      return Object.values(grouped);
+    })(),
     time: order.placedAt
       ? new Date(order.placedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
       : '--:--',

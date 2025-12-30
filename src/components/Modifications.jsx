@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useMenu } from '../hooks/useMenu';
 import styles from './Modifications.module.css';
@@ -20,14 +21,27 @@ export default function Modifications() {
     goToStep,
   } = useApp();
   const { availableExclusions } = useMenu();
+  const [quantity, setQuantity] = useState(1);
 
   const handleBack = () => {
     goToStep('category');
   };
 
   const handleAddToOrder = () => {
-    addPendingItemToOrder();
+    // Add the item multiple times based on quantity
+    for (let i = 0; i < quantity; i++) {
+      addPendingItemToOrder();
+    }
+    setQuantity(1);
     goToStep('summary');
+  };
+
+  const decreaseQty = () => {
+    if (quantity > 1) setQuantity(q => q - 1);
+  };
+
+  const increaseQty = () => {
+    if (quantity < 10) setQuantity(q => q + 1);
   };
 
   if (!pendingItem) {
@@ -70,8 +84,28 @@ export default function Modifications() {
       </main>
 
       <footer className={styles.footer}>
+        <div className={styles.quantityRow}>
+          <span className={styles.quantityLabel}>Quantity</span>
+          <div className={styles.quantityControl}>
+            <button
+              className={styles.qtyBtn}
+              onClick={decreaseQty}
+              disabled={quantity <= 1}
+            >
+              −
+            </button>
+            <span className={styles.qtyValue}>{quantity}</span>
+            <button
+              className={styles.qtyBtn}
+              onClick={increaseQty}
+              disabled={quantity >= 10}
+            >
+              +
+            </button>
+          </div>
+        </div>
         <button className={styles.addButton} onClick={handleAddToOrder}>
-          {t('ui.addToOrder')}
+          {quantity > 1 ? `Add ${quantity} to Order` : t('ui.addToOrder')}
         </button>
       </footer>
     </div>
