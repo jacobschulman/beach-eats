@@ -1,9 +1,12 @@
+import { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import StepLayout from './StepLayout';
 import styles from './Checkout.module.css';
 
 export default function Checkout() {
   const { t, order, setGuestInfo, goToStep, placeOrder } = useApp();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittedRef = useRef(false);
 
   const handleInputChange = (field, value) => {
     setGuestInfo({ [field]: value });
@@ -14,13 +17,19 @@ export default function Checkout() {
   };
 
   const handlePlaceOrder = () => {
+    // Prevent double submission
+    if (isSubmitting || submittedRef.current) return;
+    setIsSubmitting(true);
+    submittedRef.current = true;
+
     placeOrder();
     goToStep('confirmation');
   };
 
   const isValid =
     order.guestInfo.roomNumber.trim() !== '' &&
-    order.guestInfo.lastName.trim() !== '';
+    order.guestInfo.lastName.trim() !== '' &&
+    !isSubmitting;
 
   return (
     <StepLayout

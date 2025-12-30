@@ -190,7 +190,10 @@ function appReducer(state, action) {
       if (state.order.orderNumber) {
         return state;
       }
-      const orderNumber = `SC${Date.now().toString().slice(-6)}`;
+      // Use timestamp + random to ensure unique order number
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+      const orderNumber = `SC${timestamp.toString().slice(-6)}${random}`;
       const completedOrder = {
         ...state.order,
         orderNumber,
@@ -199,12 +202,25 @@ function appReducer(state, action) {
       // Save to localStorage for kitchen display
       try {
         const existingOrders = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
-        // Check for duplicate order numbers before adding
-        if (!existingOrders.some(o => o.orderNumber === orderNumber)) {
-          existingOrders.unshift(completedOrder);
-          // Keep last 20 orders
-          localStorage.setItem('kitchenOrders', JSON.stringify(existingOrders.slice(0, 20)));
+        // Check if we recently placed an order (within 5 seconds) to prevent duplicates
+        const recentOrder = existingOrders[0];
+        if (recentOrder) {
+          const recentTime = new Date(recentOrder.placedAt).getTime();
+          const timeDiff = timestamp - recentTime;
+          // If last order was less than 5 seconds ago and has same items count, skip
+          if (timeDiff < 5000 && recentOrder.items?.length === state.order.items?.length) {
+            return {
+              ...state,
+              order: {
+                ...state.order,
+                orderNumber: recentOrder.orderNumber,
+              },
+            };
+          }
         }
+        existingOrders.unshift(completedOrder);
+        // Keep last 20 orders
+        localStorage.setItem('kitchenOrders', JSON.stringify(existingOrders.slice(0, 20)));
       } catch (e) {
         console.warn('Could not save to localStorage', e);
       }
