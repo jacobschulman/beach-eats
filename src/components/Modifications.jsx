@@ -1,6 +1,14 @@
 import { useApp } from '../context/AppContext';
-import { exclusions } from '../config/menu';
+import { useMenu } from '../hooks/useMenu';
 import styles from './Modifications.module.css';
+
+// Helper to get localized name safely
+const getLocalizedName = (name, language) => {
+  if (!name) return '';
+  if (typeof name === 'string') return name;
+  if (typeof name === 'object') return name[language] || name.en || '';
+  return '';
+};
 
 export default function Modifications() {
   const {
@@ -11,6 +19,7 @@ export default function Modifications() {
     addPendingItemToOrder,
     goToStep,
   } = useApp();
+  const { availableExclusions } = useMenu();
 
   const handleBack = () => {
     goToStep('category');
@@ -25,6 +34,8 @@ export default function Modifications() {
     return null;
   }
 
+  const itemName = getLocalizedName(pendingItem.name, language);
+
   return (
     <div className={styles.modificationsPage}>
       <header className={styles.header}>
@@ -34,7 +45,7 @@ export default function Modifications() {
         </button>
         <div className={styles.titles}>
           <h1 className={styles.title}>{t('steps.modifications.title')}</h1>
-          <p className={styles.subtitle}>{pendingItem.name[language]}</p>
+          <p className={styles.subtitle}>{itemName}</p>
         </div>
       </header>
 
@@ -42,7 +53,7 @@ export default function Modifications() {
         <p className={styles.prompt}>{t('steps.modifications.subtitle')}</p>
 
         <div className={styles.exclusionsGrid}>
-          {exclusions.map((exclusion) => {
+          {availableExclusions.map((exclusion) => {
             const isSelected = pendingItem.exclusions?.includes(exclusion.id);
             return (
               <button
@@ -50,7 +61,7 @@ export default function Modifications() {
                 className={`${styles.exclusionButton} ${isSelected ? styles.selected : ''}`}
                 onClick={() => togglePendingExclusion(exclusion.id)}
               >
-                <span className={styles.exclusionName}>{exclusion.name[language]}</span>
+                <span className={styles.exclusionName}>{getLocalizedName(exclusion.name, language)}</span>
                 {isSelected && <span className={styles.checkmark}>&#10003;</span>}
               </button>
             );
