@@ -24,15 +24,16 @@ export default function ChefDemo() {
         );
         setOrders(validOrders);
         // Initialize status for new orders
-        validOrders.forEach(order => {
-          if (order.orderNumber && !orderStatuses[order.orderNumber]) {
-            setOrderStatuses(prev => {
-              if (!prev[order.orderNumber]) {
-                return { ...prev, [order.orderNumber]: 'new' };
-              }
-              return prev;
-            });
-          }
+        setOrderStatuses(prev => {
+          const updated = { ...prev };
+          let hasChanges = false;
+          validOrders.forEach(order => {
+            if (order.orderNumber && !updated[order.orderNumber]) {
+              updated[order.orderNumber] = 'new';
+              hasChanges = true;
+            }
+          });
+          return hasChanges ? updated : prev;
         });
       } catch (e) {
         console.warn('Could not load orders', e);
@@ -43,7 +44,7 @@ export default function ChefDemo() {
     // Poll every 2 seconds for new orders
     const interval = setInterval(loadOrders, 2000);
     return () => clearInterval(interval);
-  }, [orderStatuses]);
+  }, []);
 
   // Set page title for kitchen view
   useEffect(() => {
