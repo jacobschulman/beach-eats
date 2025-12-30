@@ -465,15 +465,26 @@ export const getProteinById = (id) => proteins.find((p) => p.id === id);
 export const getFormatById = (id) => formats.find((f) => f.id === id);
 export const getAddonById = (id) => addons.find((a) => a.id === id);
 
+// Helper to get name in correct language
+const getLocalizedName = (name, language = 'en') => {
+  if (!name) return 'Unknown Item';
+  if (typeof name === 'string') return name;
+  if (typeof name === 'object') return name[language] || name.en || Object.values(name)[0];
+  return 'Unknown Item';
+};
+
 // Helper to format order item for display
 export const formatOrderItem = (item, language = 'en') => {
   const exclusionNames = (item.exclusions || [])
-    .map((id) => getExclusionById(id)?.name[language])
+    .map((id) => {
+      const exclusion = getExclusionById(id);
+      return exclusion ? getLocalizedName(exclusion.name, language) : null;
+    })
     .filter(Boolean);
 
   if (item.type === 'menu-item') {
     return {
-      title: item.name[language],
+      title: getLocalizedName(item.name, language),
       addons: [],
       exclusions: exclusionNames,
     };
@@ -482,11 +493,17 @@ export const formatOrderItem = (item, language = 'en') => {
   const protein = getProteinById(item.protein);
   const format = getFormatById(item.format);
   const addonNames = (item.addons || [])
-    .map((id) => getAddonById(id)?.name[language])
+    .map((id) => {
+      const addon = getAddonById(id);
+      return addon ? getLocalizedName(addon.name, language) : null;
+    })
     .filter(Boolean);
 
+  const proteinName = protein ? getLocalizedName(protein.name, language) : '';
+  const formatName = format ? getLocalizedName(format.name, language) : '';
+
   return {
-    title: `${protein?.name[language]} ${format?.name[language]}`,
+    title: `${proteinName} ${formatName}`.trim() || 'Custom Item',
     addons: addonNames,
     exclusions: exclusionNames,
   };

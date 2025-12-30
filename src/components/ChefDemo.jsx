@@ -18,9 +18,13 @@ export default function ChefDemo() {
     const loadOrders = () => {
       try {
         const stored = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
-        setOrders(stored);
+        // Filter out any malformed orders
+        const validOrders = stored.filter(order =>
+          order && order.orderNumber && order.items && Array.isArray(order.items)
+        );
+        setOrders(validOrders);
         // Initialize status for new orders
-        stored.forEach(order => {
+        validOrders.forEach(order => {
           if (order.orderNumber && !orderStatuses[order.orderNumber]) {
             setOrderStatuses(prev => {
               if (!prev[order.orderNumber]) {
