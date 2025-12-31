@@ -55,9 +55,28 @@ const statusConfig = {
   done: { color: '#718096', next: null, actionKey: null },
 };
 
+// Load persisted statuses from localStorage
+const loadPersistedStatuses = () => {
+  try {
+    const stored = localStorage.getItem('kitchenOrderStatuses');
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
+
+// Save statuses to localStorage
+const saveStatuses = (statuses) => {
+  try {
+    localStorage.setItem('kitchenOrderStatuses', JSON.stringify(statuses));
+  } catch (e) {
+    console.warn('Could not save order statuses', e);
+  }
+};
+
 export default function ChefDemo() {
   const [orders, setOrders] = useState([]);
-  const [orderStatuses, setOrderStatuses] = useState({});
+  const [orderStatuses, setOrderStatuses] = useState(loadPersistedStatuses);
   const [language, setLanguage] = useState('en');
   const t = kitchenText[language];
 
@@ -131,7 +150,11 @@ export default function ChefDemo() {
     const currentStatus = orderStatuses[orderNum] || 'new';
     const nextStatus = statusConfig[currentStatus].next;
     if (nextStatus) {
-      setOrderStatuses(prev => ({ ...prev, [orderNum]: nextStatus }));
+      setOrderStatuses(prev => {
+        const updated = { ...prev, [orderNum]: nextStatus };
+        saveStatuses(updated);
+        return updated;
+      });
     }
   };
 
@@ -178,6 +201,7 @@ export default function ChefDemo() {
 
   const clearOrders = () => {
     localStorage.removeItem('kitchenOrders');
+    localStorage.removeItem('kitchenOrderStatuses');
     setOrders([]);
     setOrderStatuses({});
   };
