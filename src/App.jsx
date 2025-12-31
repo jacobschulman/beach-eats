@@ -13,15 +13,22 @@ import Confirmation from './components/Confirmation';
 import KitchenDisplay from './components/KitchenDisplay';
 import ChefDemo from './components/ChefDemo';
 import MenuAdmin from './components/MenuAdmin';
+import DemoPage from './components/DemoPage';
 import './App.css';
 
 // Check for special modes via URL params
 const urlParams = new URLSearchParams(window.location.search);
 const isChefDemo = urlParams.has('chef');
 const isAdmin = urlParams.has('admin');
+const isDemo = urlParams.has('demo');
 
 function AppContent() {
   const { currentStep } = useApp();
+
+  // Demo mode - presentation page with QR codes
+  if (isDemo) {
+    return <DemoPage />;
+  }
 
   // Admin mode - menu management
   if (isAdmin) {

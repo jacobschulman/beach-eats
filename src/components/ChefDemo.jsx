@@ -2,16 +2,64 @@ import { useState, useEffect } from 'react';
 import { formatOrderItem } from '../config/menu';
 import styles from './ChefDemo.module.css';
 
+// Kitchen display translations
+const kitchenText = {
+  en: {
+    title: 'KITCHEN DISPLAY',
+    subtitle: 'Susurros del Corazón • Beach Service',
+    active: 'Active',
+    waiting: 'Waiting for Orders',
+    waitingDesc: 'Orders will appear here instantly when guests place them.',
+    waitingHint: 'Open the guest app in another window to place a test order',
+    syncNote: 'Orders sync in real-time • Tap status to update',
+    clearAll: 'Clear All',
+    status: {
+      new: 'NEW',
+      preparing: 'PREP',
+      ready: 'READY',
+      done: 'DONE',
+    },
+    action: {
+      start: 'START',
+      ready: 'READY',
+      done: 'DONE',
+    },
+  },
+  es: {
+    title: 'PANTALLA DE COCINA',
+    subtitle: 'Susurros del Corazón • Servicio de Playa',
+    active: 'Activos',
+    waiting: 'Esperando Pedidos',
+    waitingDesc: 'Los pedidos aparecerán aquí al instante.',
+    waitingHint: 'Abra la app de huéspedes en otra ventana para hacer un pedido de prueba',
+    syncNote: 'Pedidos sincronizados • Toque el estado para actualizar',
+    clearAll: 'Borrar Todo',
+    status: {
+      new: 'NUEVO',
+      preparing: 'PREP',
+      ready: 'LISTO',
+      done: 'HECHO',
+    },
+    action: {
+      start: 'INICIAR',
+      ready: 'LISTO',
+      done: 'HECHO',
+    },
+  },
+};
+
 const statusConfig = {
-  new: { color: '#e53e3e', label: 'NEW', next: 'preparing', action: 'START' },
-  preparing: { color: '#dd6b20', label: 'PREP', next: 'ready', action: 'READY' },
-  ready: { color: '#38a169', label: 'READY', next: 'done', action: 'DONE' },
-  done: { color: '#718096', label: 'DONE', next: null, action: null },
+  new: { color: '#e53e3e', next: 'preparing', actionKey: 'start' },
+  preparing: { color: '#dd6b20', next: 'ready', actionKey: 'ready' },
+  ready: { color: '#38a169', next: 'done', actionKey: 'done' },
+  done: { color: '#718096', next: null, actionKey: null },
 };
 
 export default function ChefDemo() {
   const [orders, setOrders] = useState([]);
   const [orderStatuses, setOrderStatuses] = useState({});
+  const [language, setLanguage] = useState('en');
+  const t = kitchenText[language];
 
   // Load orders from localStorage and poll for updates
   useEffect(() => {
@@ -87,6 +135,10 @@ export default function ChefDemo() {
     }
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'es' : 'en');
+  };
+
   // Transform orders for display
   const displayOrders = orders.map(order => ({
     orderNumber: order.orderNumber,
@@ -97,7 +149,7 @@ export default function ChefDemo() {
       // Group items by name + mods combination
       const grouped = {};
       (order.items || []).forEach(item => {
-        const formatted = formatOrderItem(item, 'en');
+        const formatted = formatOrderItem(item, language);
         const addons = formatted.addons.map(a => `+ ${a}`);
         const exclusions = (formatted.exclusions || []).map(e => `NO ${e.replace('No ', '')}`);
         const mods = [...exclusions, ...addons];
@@ -115,7 +167,7 @@ export default function ChefDemo() {
       return Object.values(grouped);
     })(),
     time: order.placedAt
-      ? new Date(order.placedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      ? new Date(order.placedAt).toLocaleTimeString(language === 'es' ? 'es-MX' : 'en-US', { hour: '2-digit', minute: '2-digit' })
       : '--:--',
     placedAt: order.placedAt,
     status: orderStatuses[order.orderNumber] || 'new',
@@ -134,16 +186,19 @@ export default function ChefDemo() {
     <div className={styles.kitchen}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
-          <h1 className={styles.title}>KITCHEN DISPLAY</h1>
-          <span className={styles.subtitle}>Susurros del Corazón • Beach Service</span>
+          <h1 className={styles.title}>{t.title}</h1>
+          <span className={styles.subtitle}>{t.subtitle}</span>
         </div>
         <div className={styles.headerRight}>
+          <button className={styles.langToggle} onClick={toggleLanguage}>
+            {language === 'en' ? 'ES' : 'EN'}
+          </button>
           <div className={styles.stat}>
             <span className={styles.statValue}>{activeOrders.length}</span>
-            <span className={styles.statLabel}>Active</span>
+            <span className={styles.statLabel}>{t.active}</span>
           </div>
           <div className={styles.clock}>
-            {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            {new Date().toLocaleTimeString(language === 'es' ? 'es-MX' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
           </div>
         </div>
       </header>
@@ -151,13 +206,9 @@ export default function ChefDemo() {
       {noOrders ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>📋</div>
-          <h2 className={styles.emptyTitle}>Waiting for Orders</h2>
-          <p className={styles.emptyText}>
-            Orders will appear here instantly when guests place them.
-          </p>
-          <p className={styles.emptyHint}>
-            Open the guest app in another window to place a test order
-          </p>
+          <h2 className={styles.emptyTitle}>{t.waiting}</h2>
+          <p className={styles.emptyText}>{t.waitingDesc}</p>
+          <p className={styles.emptyHint}>{t.waitingHint}</p>
         </div>
       ) : (
         <div className={styles.ordersGrid}>
@@ -167,7 +218,7 @@ export default function ChefDemo() {
                 className={styles.ticketStatus}
                 style={{ backgroundColor: statusConfig[orderItem.status].color }}
               >
-                <span className={styles.statusLabel}>{statusConfig[orderItem.status].label}</span>
+                <span className={styles.statusLabel}>{t.status[orderItem.status]}</span>
                 <span className={styles.timer}>{getTimerDisplay(orderItem.placedAt)}</span>
               </div>
 
@@ -210,13 +261,13 @@ export default function ChefDemo() {
 
               <div className={styles.ticketFooter}>
                 <span className={styles.orderTime}>{orderItem.time}</span>
-                {statusConfig[orderItem.status].action && (
+                {statusConfig[orderItem.status].actionKey && (
                   <button
                     className={styles.actionBtn}
                     onClick={() => updateStatus(orderItem.orderNumber)}
                     style={{ backgroundColor: statusConfig[orderItem.status].color }}
                   >
-                    {statusConfig[orderItem.status].action}
+                    {t.action[statusConfig[orderItem.status].actionKey]}
                   </button>
                 )}
               </div>
@@ -227,8 +278,8 @@ export default function ChefDemo() {
 
       <div className={styles.footer}>
         <p>
-          Orders sync in real-time • Tap status to update •
-          <button onClick={clearOrders} className={styles.clearBtn}>Clear All</button>
+          {t.syncNote} •
+          <button onClick={clearOrders} className={styles.clearBtn}>{t.clearAll}</button>
         </p>
       </div>
     </div>
