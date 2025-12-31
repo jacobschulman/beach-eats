@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import { proteins as defaultProteins, formats as defaultFormats, addons as defaultAddons, menuItems as defaultMenuItems, exclusions as defaultExclusions } from '../config/menu';
+import { generateShareURL } from '../hooks/useMenu';
 import styles from './MenuAdmin.module.css';
 
 const STORAGE_KEY = 'beachEatsMenuConfig';
+
+// Generate QR code URL
+const getQRCodeUrl = (url, size = 180) => {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=2d2d2d`;
+};
 
 function getStoredMenu() {
   try {
@@ -52,6 +58,8 @@ export default function MenuAdmin() {
   });
   const [saved, setSaved] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('picaditos');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copied, setCopied] = useState('');
 
   useEffect(() => {
     document.title = 'Beach Eats Admin';
@@ -94,6 +102,17 @@ export default function MenuAdmin() {
         updated[section][index] = { ...updated[section][index], [field]: value };
       }
       return updated;
+    });
+  };
+
+  // Generate share URLs with current config
+  const guestUrl = generateShareURL(menu, '');
+  const kitchenUrl = generateShareURL(menu, 'chef');
+
+  const handleCopy = (url, label) => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(label);
+      setTimeout(() => setCopied(''), 2000);
     });
   };
 
@@ -190,11 +209,14 @@ export default function MenuAdmin() {
           <span className={styles.subtitle}>Beach Eats CMS</span>
         </div>
         <div className={styles.headerActions}>
+          <button onClick={() => setShowShareModal(true)} className={styles.shareBtn}>
+            Share Config
+          </button>
           <button onClick={handleReset} className={styles.resetBtn}>
-            Reset to Defaults
+            Reset
           </button>
           <button onClick={handleSave} className={`${styles.saveBtn} ${saved ? styles.saved : ''}`}>
-            {saved ? '✓ Saved' : 'Save Changes'}
+            {saved ? '✓ Saved' : 'Save'}
           </button>
         </div>
       </header>
@@ -235,8 +257,59 @@ export default function MenuAdmin() {
       </main>
 
       <footer className={styles.footer}>
-        <p>Changes are saved to this browser. Open the <a href="/" target="_blank">guest app</a> or <a href="/?chef" target="_blank">kitchen display</a> to see updates.</p>
+        <p>Click "Share Config" to generate QR codes with your current menu settings.</p>
       </footer>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowShareModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setShowShareModal(false)}>×</button>
+            <h2 className={styles.modalTitle}>Share Your Menu</h2>
+            <p className={styles.modalDesc}>
+              These QR codes contain your current menu configuration.
+              Scan them on any device to load the same settings.
+            </p>
+
+            <div className={styles.shareCards}>
+              <div className={styles.shareCard}>
+                <h3>Guest Ordering</h3>
+                <img
+                  src={getQRCodeUrl(guestUrl)}
+                  alt="Guest ordering QR"
+                  className={styles.qrCode}
+                />
+                <button
+                  className={`${styles.copyBtn} ${copied === 'guest' ? styles.copied : ''}`}
+                  onClick={() => handleCopy(guestUrl, 'guest')}
+                >
+                  {copied === 'guest' ? '✓ Copied!' : 'Copy Link'}
+                </button>
+              </div>
+
+              <div className={styles.shareCard}>
+                <h3>Kitchen Display</h3>
+                <img
+                  src={getQRCodeUrl(kitchenUrl)}
+                  alt="Kitchen display QR"
+                  className={styles.qrCode}
+                />
+                <button
+                  className={`${styles.copyBtn} ${copied === 'kitchen' ? styles.copied : ''}`}
+                  onClick={() => handleCopy(kitchenUrl, 'kitchen')}
+                >
+                  {copied === 'kitchen' ? '✓ Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            </div>
+
+            <p className={styles.modalNote}>
+              <strong>Note:</strong> Save your changes first, then share these links.
+              Anyone who scans will see your exact menu configuration.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

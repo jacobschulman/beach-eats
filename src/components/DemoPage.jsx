@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useMenu, generateShareURL } from '../hooks/useMenu';
 import styles from './DemoPage.module.css';
 
 // Generate QR code URL using QR Server API
@@ -8,6 +9,7 @@ const getQRCodeUrl = (url, size = 200) => {
 
 export default function DemoPage() {
   const [baseUrl, setBaseUrl] = useState('');
+  const { menu } = useMenu();
 
   useEffect(() => {
     document.title = 'Beach Eats Demo';
@@ -15,6 +17,11 @@ export default function DemoPage() {
     const url = window.location.origin + window.location.pathname;
     setBaseUrl(url.replace(/\/$/, ''));
   }, []);
+
+  // Generate URLs with current config baked in
+  const guestUrl = menu ? generateShareURL(menu, '') : baseUrl;
+  const kitchenUrl = menu ? generateShareURL(menu, 'chef') : `${baseUrl}?chef`;
+  const adminUrl = `${baseUrl}?admin`;
 
   const sections = [
     {
@@ -24,7 +31,7 @@ export default function DemoPage() {
       description: 'Mobile-friendly ordering experience for beach guests. Supports English and Spanish.',
       descriptionEs: 'Experiencia de pedidos amigable para huéspedes. Soporta inglés y español.',
       icon: '📱',
-      url: baseUrl,
+      url: guestUrl,
       color: '#c45d3a',
     },
     {
@@ -34,7 +41,7 @@ export default function DemoPage() {
       description: 'Real-time order tracking for kitchen staff. Orders appear instantly.',
       descriptionEs: 'Seguimiento de pedidos en tiempo real. Los pedidos aparecen instantáneamente.',
       icon: '👨‍🍳',
-      url: `${baseUrl}?chef`,
+      url: kitchenUrl,
       color: '#38a169',
     },
     {
@@ -44,7 +51,7 @@ export default function DemoPage() {
       description: 'Content management system to update items, prices, and availability.',
       descriptionEs: 'Sistema de gestión para actualizar artículos, precios y disponibilidad.',
       icon: '⚙️',
-      url: `${baseUrl}?admin`,
+      url: adminUrl,
       color: '#3182ce',
     },
   ];
