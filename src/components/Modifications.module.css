@@ -1,8 +1,10 @@
 .modificationsPage {
+  min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--color-cream);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .header {
@@ -50,6 +52,7 @@
 
 .content {
   flex: 1;
+  min-height: 0;
   padding: 24px;
   overflow-y: auto;
 }
@@ -84,12 +87,8 @@
 }
 
 .exclusionButton.selected {
-  background: var(--color-terracotta);
-  border-color: var(--color-terracotta);
-}
-
-.exclusionButton.selected .exclusionName {
-  color: #fff;
+  background: #2d2d2d;
+  border-color: #2d2d2d;
 }
 
 .exclusionName {
@@ -98,13 +97,21 @@
   color: var(--color-charcoal);
 }
 
+.exclusionButton.selected .exclusionName {
+  color: #fff;
+  font-weight: 600;
+}
+
 .checkmark {
   font-size: 18px;
   color: #fff;
+  font-weight: 700;
 }
 
 .footer {
-  padding: 16px 24px 32px;
+  flex-shrink: 0;
+  padding: 16px 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 8px));
   background: var(--color-cream);
   border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
