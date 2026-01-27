@@ -1,13 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  proteins as defaultProteins,
-  formats as defaultFormats,
-  addons as defaultAddons,
-  exclusions as defaultExclusions,
-  menuItems as defaultMenuItems,
-} from '../config/menu';
+import { useApp } from '../context/AppContext';
 
-const STORAGE_KEY = 'beachEatsMenuConfig';
 const CONFIG_PARAM = 'config';
 
 function initializeWithPrices(items, defaultPrice = 0) {
@@ -30,19 +23,20 @@ function initializeMenuItems(menuItems) {
   return result;
 }
 
-function getDefaultMenu() {
+function getDefaultMenu(resortConfig) {
+  const menuConfig = resortConfig.menu;
   return {
-    proteins: initializeWithPrices(defaultProteins),
-    formats: initializeWithPrices(defaultFormats),
-    addons: initializeWithPrices(defaultAddons),
-    exclusions: initializeWithPrices(defaultExclusions),
-    menuItems: initializeMenuItems(defaultMenuItems),
+    proteins: initializeWithPrices(menuConfig.proteins),
+    formats: initializeWithPrices(menuConfig.formats),
+    addons: initializeWithPrices(menuConfig.addons),
+    exclusions: initializeWithPrices(menuConfig.exclusions),
+    menuItems: initializeMenuItems(menuConfig.menuItems),
   };
 }
 
 // Compress config for URL (only store changed values)
-function compressConfig(menu) {
-  const defaults = getDefaultMenu();
+function compressConfig(menu, resortConfig) {
+  const defaults = getDefaultMenu(resortConfig);
   const changes = {};
 
   // Track availability and price changes for each section
@@ -81,8 +75,8 @@ function compressConfig(menu) {
 }
 
 // Apply compressed config changes to defaults
-function applyCompressedConfig(compressed) {
-  const menu = getDefaultMenu();
+function applyCompressedConfig(compressed, resortConfig) {
+  const menu = getDefaultMenu(resortConfig);
 
   ['proteins', 'formats', 'addons', 'exclusions'].forEach(section => {
     if (compressed[section]) {
@@ -114,9 +108,9 @@ function applyCompressedConfig(compressed) {
 }
 
 // Encode config to URL-safe string
-export function encodeConfig(menu) {
+export function encodeConfig(menu, resortConfig) {
   try {
-    const compressed = compressConfig(menu);
+    const compressed = compressConfig(menu, resortConfig);
     if (Object.keys(compressed).length === 0) return '';
     const json = JSON.stringify(compressed);
     return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -126,28 +120,28 @@ export function encodeConfig(menu) {
 }
 
 // Decode config from URL-safe string
-export function decodeConfig(encoded) {
+export function decodeConfig(encoded, resortConfig) {
   try {
     if (!encoded) return null;
     const padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
     const json = atob(padded);
     const compressed = JSON.parse(json);
-    return applyCompressedConfig(compressed);
+    return applyCompressedConfig(compressed, resortConfig);
   } catch {
     return null;
   }
 }
 
 // Get config from URL if present
-function getURLConfig() {
+function getURLConfig(resortConfig, storageKey) {
   try {
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get(CONFIG_PARAM);
     if (encoded) {
-      const config = decodeConfig(encoded);
+      const config = decodeConfig(encoded, resortConfig);
       if (config) {
         // Also save to localStorage so it persists
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        localStorage.setItem(storageKey, JSON.stringify(config));
         return config;
       }
     }
@@ -157,17 +151,19 @@ function getURLConfig() {
   return null;
 }
 
-function getStoredMenu() {
+function getStoredMenu(resortConfig, resortId) {
+  const storageKey = `beach-eats-menu-${resortId}`;
+
   // First check URL for shared config
-  const urlConfig = getURLConfig();
+  const urlConfig = getURLConfig(resortConfig, storageKey);
   if (urlConfig) return urlConfig;
 
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(storageKey);
     if (stored) {
       const parsed = JSON.parse(stored);
       // Merge with defaults to ensure new items are included
-      const defaults = getDefaultMenu();
+      const defaults = getDefaultMenu(resortConfig);
       return {
         proteins: mergeItems(defaults.proteins, parsed.proteins),
         formats: mergeItems(defaults.formats, parsed.formats),
@@ -179,7 +175,7 @@ function getStoredMenu() {
   } catch {
     // Fall through to defaults
   }
-  return getDefaultMenu();
+  return getDefaultMenu(resortConfig);
 }
 
 function mergeItems(defaults, stored) {
@@ -200,30 +196,36 @@ function mergeMenuItems(defaults, stored) {
 }
 
 // Generate shareable URL with current config
-export function generateShareURL(menu, mode = '') {
-  const encoded = encodeConfig(menu);
+export function generateShareURL(menu, mode = '', resortConfig, resortId) {
+  const encoded = encodeConfig(menu, resortConfig);
   const baseUrl = window.location.origin + window.location.pathname;
-  const modeParam = mode ? `${mode}&` : '';
-  if (encoded) {
-    return `${baseUrl}?${modeParam}${CONFIG_PARAM}=${encoded}`;
-  }
-  return `${baseUrl}${mode ? '?' + mode : ''}`;
+
+  // Build params array
+  const params = [];
+  if (resortId) params.push(`resort=${resortId}`);
+  if (mode) params.push(mode);
+  if (encoded) params.push(`${CONFIG_PARAM}=${encoded}`);
+
+  const queryString = params.length > 0 ? '?' + params.join('&') : '';
+  return `${baseUrl}${queryString}`;
 }
 
 export function useMenu() {
-  const [menu, setMenu] = useState(getStoredMenu);
+  const { resortConfig, resortId } = useApp();
+  const [menu, setMenu] = useState(() => getStoredMenu(resortConfig, resortId));
+  const storageKey = `beach-eats-menu-${resortId}`;
 
   // Listen for storage changes (when admin saves)
   useEffect(() => {
     const handleStorage = (e) => {
-      if (e.key === STORAGE_KEY) {
-        setMenu(getStoredMenu());
+      if (e.key === storageKey) {
+        setMenu(getStoredMenu(resortConfig, resortId));
       }
     };
 
     // Also poll for changes (same-tab updates)
     const interval = setInterval(() => {
-      setMenu(getStoredMenu());
+      setMenu(getStoredMenu(resortConfig, resortId));
     }, 2000);
 
     window.addEventListener('storage', handleStorage);
@@ -231,7 +233,7 @@ export function useMenu() {
       window.removeEventListener('storage', handleStorage);
       clearInterval(interval);
     };
-  }, []);
+  }, [resortId, resortConfig, storageKey]);
 
   // Get available items only
   const getAvailable = useCallback((items) => {

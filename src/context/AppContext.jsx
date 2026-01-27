@@ -1,45 +1,91 @@
-import { createContext, useContext, useReducer, useCallback } from 'react';
-import { theme as defaultTheme, getTheme } from '../config/theme';
-import { getText } from '../config/content';
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import { getResortConfig, defaultResortId } from '../config/resorts/index';
 
-// Initial state
-const initialState = {
-  // Language
-  language: 'en',
+// Detect current resort from URL or localStorage
+function detectCurrentResort() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlResort = urlParams.get('resort');
+  const storedResort = localStorage.getItem('beach-eats-resort');
+  return urlResort || storedResort || defaultResortId;
+}
 
-  // Theme
-  theme: defaultTheme,
-  themeName: 'susurros',
+// Save resort selection to localStorage
+function saveResortSelection(resortId) {
+  try {
+    localStorage.setItem('beach-eats-resort', resortId);
+  } catch (e) {
+    console.warn('Could not save resort to localStorage', e);
+  }
+}
 
-  // Navigation
-  currentStep: 'welcome', // welcome, menu, category, protein, format, addons, summary, checkout, confirmation
-  selectedCategory: null,
+// Helper function to get translated text from resort config
+function getTextFromConfig(resortConfig, path, language = 'en') {
+  const keys = path.split('.');
+  let value = resortConfig.content;
 
-  // Current item being built (Build Your Own)
-  currentItem: {
-    protein: null,
-    format: null,
-    addons: [],
-    exclusions: [],
-  },
+  for (const key of keys) {
+    if (value && typeof value === 'object' && key in value) {
+      value = value[key];
+    } else {
+      console.warn(`Missing translation in resort config: ${path}`);
+      return path;
+    }
+  }
 
-  // Pending menu item being modified before adding to order
-  pendingItem: null,
+  if (typeof value === 'object' && language in value) {
+    return value[language];
+  }
 
-  // Order (collection of items)
-  order: {
-    items: [],
-    guestInfo: {
-      roomNumber: '',
-      lastName: '',
-      allergies: '',
+  return value?.en || path;
+}
+
+// Function to create initial state with resort config
+function createInitialState(resortId) {
+  const resortConfig = getResortConfig(resortId);
+
+  return {
+    // Resort
+    resortId,
+    resortConfig,
+
+    // Language
+    language: 'en',
+
+    // Theme
+    theme: resortConfig.theme,
+    themeName: resortConfig.id,
+
+    // Navigation
+    currentStep: 'welcome', // welcome, menu, category, protein, format, addons, summary, checkout, confirmation
+    selectedCategory: null,
+
+    // Current item being built (Build Your Own)
+    currentItem: {
+      protein: null,
+      format: null,
+      addons: [],
+      exclusions: [],
     },
-    orderNumber: null,
-  },
-};
+
+    // Pending menu item being modified before adding to order
+    pendingItem: null,
+
+    // Order (collection of items)
+    order: {
+      items: [],
+      guestInfo: {
+        roomNumber: '',
+        lastName: '',
+        allergies: '',
+      },
+      orderNumber: null,
+    },
+  };
+}
 
 // Action types
 const ACTIONS = {
+  SET_RESORT: 'SET_RESORT',
   SET_LANGUAGE: 'SET_LANGUAGE',
   SET_THEME: 'SET_THEME',
   GO_TO_STEP: 'GO_TO_STEP',
@@ -63,6 +109,17 @@ const ACTIONS = {
 // Reducer
 function appReducer(state, action) {
   switch (action.type) {
+    case ACTIONS.SET_RESORT: {
+      const newResortConfig = getResortConfig(action.payload);
+      return {
+        ...state,
+        resortId: action.payload,
+        resortConfig: newResortConfig,
+        theme: newResortConfig.theme,
+        themeName: newResortConfig.id,
+      };
+    }
+
     case ACTIONS.SET_LANGUAGE:
       return { ...state, language: action.payload };
 
@@ -70,7 +127,7 @@ function appReducer(state, action) {
       return {
         ...state,
         themeName: action.payload,
-        theme: getTheme(action.payload),
+        theme: state.resortConfig.theme,
       };
 
     case ACTIONS.GO_TO_STEP:
@@ -193,15 +250,18 @@ function appReducer(state, action) {
       // Use timestamp + random to ensure unique order number
       const timestamp = Date.now();
       const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-      const orderNumber = `SC${timestamp.toString().slice(-6)}${random}`;
+      // Use resort-specific order prefix
+      const orderPrefix = state.resortConfig.orderPrefix || 'OR';
+      const orderNumber = `${orderPrefix}${timestamp.toString().slice(-6)}${random}`;
       const completedOrder = {
         ...state.order,
         orderNumber,
         placedAt: new Date().toISOString(),
       };
-      // Save to localStorage for kitchen display
+      // Save to resort-specific localStorage key for kitchen display
       try {
-        const existingOrders = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
+        const storageKey = `kitchen-orders-${state.resortId}`;
+        const existingOrders = JSON.parse(localStorage.getItem(storageKey) || '[]');
         // Check if we recently placed an order (within 5 seconds) to prevent duplicates
         const recentOrder = existingOrders[0];
         if (recentOrder) {
@@ -220,7 +280,7 @@ function appReducer(state, action) {
         }
         existingOrders.unshift(completedOrder);
         // Keep last 20 orders
-        localStorage.setItem('kitchenOrders', JSON.stringify(existingOrders.slice(0, 20)));
+        localStorage.setItem(storageKey, JSON.stringify(existingOrders.slice(0, 20)));
       } catch (e) {
         console.warn('Could not save to localStorage', e);
       }
@@ -263,7 +323,38 @@ const AppContext = createContext(null);
 
 // Provider component
 export function AppProvider({ children }) {
-  const [state, dispatch] = useReducer(appReducer, initialState);
+  // Detect resort and create initial state
+  const resortId = detectCurrentResort();
+  const [state, dispatch] = useReducer(appReducer, createInitialState(resortId));
+
+  // Save resort selection if it came from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlResort = urlParams.get('resort');
+    if (urlResort) {
+      saveResortSelection(urlResort);
+    }
+  }, []);
+
+  // Apply theme CSS variables when resort changes
+  useEffect(() => {
+    const root = document.documentElement;
+    const theme = state.resortConfig.theme;
+
+    // Inject color variables
+    Object.entries(theme.colors).forEach(([key, value]) => {
+      root.style.setProperty(`--color-${key}`, value);
+    });
+
+    // Inject typography variables
+    Object.entries(theme.typography).forEach(([key, value]) => {
+      root.style.setProperty(`--font-${key}`, value);
+    });
+
+    // Update document title with resort name
+    const resortName = state.resortConfig.branding.name.en;
+    document.title = `${resortName} - Beach Ordering`;
+  }, [state.resortId, state.resortConfig]);
 
   // Language actions
   const toggleLanguage = useCallback(() => {
@@ -274,8 +365,8 @@ export function AppProvider({ children }) {
   }, [state.language]);
 
   const t = useCallback(
-    (path) => getText(path, state.language),
-    [state.language]
+    (path) => getTextFromConfig(state.resortConfig, path, state.language),
+    [state.resortConfig, state.language]
   );
 
   // Navigation actions
