@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useMenu, generateShareURL } from '../hooks/useMenu';
+import { getAllResorts } from '../config/resorts/index';
 import styles from './DemoPage.module.css';
 
 // Generate QR code URL using QR Server API
@@ -9,55 +9,17 @@ const getQRCodeUrl = (url, size = 200) => {
 
 export default function DemoPage() {
   const [baseUrl, setBaseUrl] = useState('');
-  const { menu } = useMenu();
+  const allResorts = getAllResorts();
 
   useEffect(() => {
-    document.title = 'Beach Eats Demo';
+    document.title = 'Beach Eats - Multi-Resort Demo';
     // Get the current base URL
     const url = window.location.origin + window.location.pathname;
     setBaseUrl(url.replace(/\/$/, ''));
   }, []);
 
-  // Generate URLs with current config baked in
-  const guestUrl = menu ? generateShareURL(menu, '') : baseUrl;
-  const kitchenUrl = menu ? generateShareURL(menu, 'chef') : `${baseUrl}?chef`;
-  const adminUrl = `${baseUrl}?admin`;
-
-  const sections = [
-    {
-      id: 'guest',
-      title: 'Guest Ordering',
-      titleEs: 'Pedidos de Huéspedes',
-      description: 'Mobile-friendly ordering experience for beach guests. Supports English and Spanish.',
-      descriptionEs: 'Experiencia de pedidos amigable para huéspedes. Soporta inglés y español.',
-      icon: '📱',
-      url: guestUrl,
-      color: '#c45d3a',
-    },
-    {
-      id: 'kitchen',
-      title: 'Kitchen Display',
-      titleEs: 'Pantalla de Cocina',
-      description: 'Real-time order tracking for kitchen staff. Orders appear instantly.',
-      descriptionEs: 'Seguimiento de pedidos en tiempo real. Los pedidos aparecen instantáneamente.',
-      icon: '👨‍🍳',
-      url: kitchenUrl,
-      color: '#38a169',
-    },
-    {
-      id: 'admin',
-      title: 'Menu Manager',
-      titleEs: 'Administrador de Menú',
-      description: 'Content management system to update items, prices, and availability.',
-      descriptionEs: 'Sistema de gestión para actualizar artículos, precios y disponibilidad.',
-      icon: '⚙️',
-      url: adminUrl,
-      color: '#3182ce',
-    },
-  ];
-
-  const openInNewTab = (url) => {
-    window.open(url, '_blank');
+  const openLink = (url) => {
+    window.location.href = url;
   };
 
   return (
@@ -65,11 +27,7 @@ export default function DemoPage() {
       <header className={styles.header}>
         <div className={styles.logoArea}>
           <h1 className={styles.title}>Beach Eats</h1>
-          <p className={styles.subtitle}>Digital Ordering System</p>
-        </div>
-        <div className={styles.resort}>
-          <span className={styles.resortName}>Susurros del Corazón</span>
-          <span className={styles.resortTag}>by Auberge Resorts</span>
+          <p className={styles.subtitle}>Multi-Resort Digital Ordering Platform</p>
         </div>
       </header>
 
@@ -78,55 +36,125 @@ export default function DemoPage() {
           <h2>System Overview</h2>
           <p>
             A complete digital ordering solution for beach and pool service.
-            Scan any QR code below to access that part of the system.
+            Each resort has its own branding, menu, and isolated order management.
           </p>
         </div>
 
-        <div className={styles.cardsGrid}>
-          {sections.map((section) => (
-            <div
-              key={section.id}
-              className={styles.card}
-              style={{ '--accent-color': section.color }}
-            >
-              <div className={styles.cardHeader}>
-                <span className={styles.cardIcon}>{section.icon}</span>
-                <div className={styles.cardTitles}>
-                  <h3 className={styles.cardTitle}>{section.title}</h3>
-                  <span className={styles.cardTitleEs}>{section.titleEs}</span>
+        {allResorts.map((resort) => {
+          const guestUrl = `${baseUrl}?resort=${resort.id}`;
+          const kitchenUrl = `${baseUrl}?resort=${resort.id}&chef`;
+          const adminUrl = `${baseUrl}?resort=${resort.id}&admin`;
+
+          return (
+            <div key={resort.id} className={styles.resortSection}>
+              <div className={styles.resortHeader}>
+                <h2 className={styles.resortName}>{resort.branding.name.en}</h2>
+                <p className={styles.resortByline}>{resort.branding.byline.en}</p>
+                <p className={styles.resortTagline}>{resort.branding.tagline.en}</p>
+              </div>
+
+              <div className={styles.cardsGrid}>
+                {/* Guest Ordering */}
+                <div className={styles.card} style={{ '--accent-color': '#c45d3a' }}>
+                  <div className={styles.cardHeader}>
+                    <span className={styles.cardIcon}>📱</span>
+                    <h3 className={styles.cardTitle}>Guest Ordering</h3>
+                  </div>
+                  <p className={styles.cardDesc}>
+                    Mobile-friendly ordering experience. Bilingual support (EN/ES).
+                  </p>
+                  <div className={styles.qrSection}>
+                    {baseUrl && (
+                      <img
+                        src={getQRCodeUrl(guestUrl)}
+                        alt="Guest Ordering QR Code"
+                        className={styles.qrCode}
+                        loading="lazy"
+                      />
+                    )}
+                    <p className={styles.scanText}>Scan to order</p>
+                  </div>
+                  <button
+                    className={styles.openBtn}
+                    onClick={() => openLink(guestUrl)}
+                    style={{ backgroundColor: '#c45d3a' }}
+                  >
+                    Open Guest App
+                  </button>
+                  <a href={guestUrl} className={styles.urlLink}>{guestUrl}</a>
+                </div>
+
+                {/* Kitchen Display */}
+                <div className={styles.card} style={{ '--accent-color': '#38a169' }}>
+                  <div className={styles.cardHeader}>
+                    <span className={styles.cardIcon}>👨‍🍳</span>
+                    <h3 className={styles.cardTitle}>Kitchen Display</h3>
+                  </div>
+                  <p className={styles.cardDesc}>
+                    Real-time order tracking for kitchen staff. Isolated per resort.
+                  </p>
+                  <div className={styles.qrSection}>
+                    {baseUrl && (
+                      <img
+                        src={getQRCodeUrl(kitchenUrl)}
+                        alt="Kitchen Display QR Code"
+                        className={styles.qrCode}
+                        loading="lazy"
+                      />
+                    )}
+                    <p className={styles.scanText}>Scan for kitchen</p>
+                  </div>
+                  <button
+                    className={styles.openBtn}
+                    onClick={() => openLink(kitchenUrl)}
+                    style={{ backgroundColor: '#38a169' }}
+                  >
+                    Open Kitchen
+                  </button>
+                  <a href={kitchenUrl} className={styles.urlLink}>{kitchenUrl}</a>
+                </div>
+
+                {/* Menu Admin */}
+                <div className={styles.card} style={{ '--accent-color': '#3182ce' }}>
+                  <div className={styles.cardHeader}>
+                    <span className={styles.cardIcon}>⚙️</span>
+                    <h3 className={styles.cardTitle}>Menu Manager</h3>
+                  </div>
+                  <p className={styles.cardDesc}>
+                    CMS to update items, prices, and availability per resort.
+                  </p>
+                  <div className={styles.qrSection}>
+                    {baseUrl && (
+                      <img
+                        src={getQRCodeUrl(adminUrl)}
+                        alt="Menu Manager QR Code"
+                        className={styles.qrCode}
+                        loading="lazy"
+                      />
+                    )}
+                    <p className={styles.scanText}>Scan for admin</p>
+                  </div>
+                  <button
+                    className={styles.openBtn}
+                    onClick={() => openLink(adminUrl)}
+                    style={{ backgroundColor: '#3182ce' }}
+                  >
+                    Open Admin
+                  </button>
+                  <a href={adminUrl} className={styles.urlLink}>{adminUrl}</a>
                 </div>
               </div>
-
-              <p className={styles.cardDesc}>{section.description}</p>
-
-              <div className={styles.qrSection}>
-                {baseUrl && (
-                  <img
-                    src={getQRCodeUrl(section.url)}
-                    alt={`QR Code for ${section.title}`}
-                    className={styles.qrCode}
-                    loading="lazy"
-                  />
-                )}
-                <p className={styles.scanText}>Scan to open</p>
-              </div>
-
-              <button
-                className={styles.openBtn}
-                onClick={() => openInNewTab(section.url)}
-                style={{ backgroundColor: section.color }}
-              >
-                Open {section.title}
-              </button>
-
-              <p className={styles.urlText}>{section.url}</p>
             </div>
-          ))}
-        </div>
+          );
+        })}
 
         <div className={styles.features}>
-          <h3>Key Features</h3>
+          <h3>Platform Features</h3>
           <div className={styles.featureGrid}>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>🏨</span>
+              <span>Multi-resort support</span>
+            </div>
             <div className={styles.feature}>
               <span className={styles.featureIcon}>🌐</span>
               <span>Bilingual (EN/ES)</span>
@@ -149,14 +177,18 @@ export default function DemoPage() {
             </div>
             <div className={styles.feature}>
               <span className={styles.featureIcon}>🎨</span>
-              <span>Custom branding</span>
+              <span>Custom branding per resort</span>
+            </div>
+            <div className={styles.feature}>
+              <span className={styles.featureIcon}>🔒</span>
+              <span>Isolated data per resort</span>
             </div>
           </div>
         </div>
       </main>
 
       <footer className={styles.footer}>
-        <p>Beach Eats Demo • Built for Susurros del Corazón</p>
+        <p>Beach Eats - Multi-Resort Platform • {allResorts.length} Resorts</p>
       </footer>
     </div>
   );

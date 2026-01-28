@@ -156,6 +156,22 @@ const susurrosConfig = {
   // ============================================
 
   content: {
+    // Resort branding (for UI display)
+    resort: {
+      name: {
+        en: 'Susurros del Corazón',
+        es: 'Susurros del Corazón',
+      },
+      tagline: {
+        en: 'Closer to Nature. Closer to the Heart.',
+        es: 'Más cerca de la naturaleza. Más cerca del corazón.',
+      },
+      byline: {
+        en: 'by Auberge Resorts',
+        es: 'por Auberge Resorts',
+      },
+    },
+
     // Navigation & UI
     ui: {
       languageToggle: {

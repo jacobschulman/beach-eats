@@ -156,6 +156,22 @@ const rwkonaConfig = {
   // ============================================
 
   content: {
+    // Resort branding (for UI display)
+    resort: {
+      name: {
+        en: 'Rosewood Kona Village',
+        es: 'Rosewood Kona Village',
+      },
+      tagline: {
+        en: 'A Sense of Place',
+        es: 'Un Sentido de Lugar',
+      },
+      byline: {
+        en: 'Rosewood Hotels & Resorts',
+        es: 'Rosewood Hotels & Resorts',
+      },
+    },
+
     // Navigation & UI
     ui: {
       languageToggle: {
