@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { formatOrderItem } from '../config/menu';
+import { useApp } from '../context/AppContext';
 import styles from './ChefDemo.module.css';
 
 // Kitchen display translations
@@ -75,6 +76,7 @@ const saveStatuses = (statuses) => {
 };
 
 export default function ChefDemo() {
+  const { resortId } = useApp();
   const [orders, setOrders] = useState([]);
   const [orderStatuses, setOrderStatuses] = useState(loadPersistedStatuses);
   const [language, setLanguage] = useState('en');
@@ -82,9 +84,12 @@ export default function ChefDemo() {
 
   // Load orders from localStorage and poll for updates
   useEffect(() => {
+    if (!resortId) return;
+
     const loadOrders = () => {
       try {
-        const stored = JSON.parse(localStorage.getItem('kitchenOrders') || '[]');
+        const storageKey = `kitchen-orders-${resortId}`;
+        const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
         // Filter out malformed orders and deduplicate by orderNumber
         const seen = new Set();
         const validOrders = stored.filter(order => {
@@ -99,7 +104,7 @@ export default function ChefDemo() {
         });
         // Save deduplicated list back to localStorage
         if (validOrders.length !== stored.length) {
-          localStorage.setItem('kitchenOrders', JSON.stringify(validOrders));
+          localStorage.setItem(storageKey, JSON.stringify(validOrders));
         }
         setOrders(validOrders);
         // Initialize status for new orders
@@ -123,7 +128,7 @@ export default function ChefDemo() {
     // Poll every 2 seconds for new orders
     const interval = setInterval(loadOrders, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [resortId]);
 
   // Set page title for kitchen view
   useEffect(() => {

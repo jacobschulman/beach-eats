@@ -317,6 +317,16 @@ const susurrosConfig = {
           en: 'For delivery to your location',
           es: 'Para entrega a su ubicación',
         },
+        roomNumber: {
+          label: {
+            en: 'Room Number',
+            es: 'Número de Habitación',
+          },
+          placeholder: {
+            en: 'Enter room number',
+            es: 'Ingrese número de habitación',
+          },
+        },
         lastName: {
           label: {
             en: 'Last Name',

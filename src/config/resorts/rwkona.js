@@ -317,6 +317,16 @@ const rwkonaConfig = {
           en: 'For delivery to your hale',
           es: 'Para entrega a su hale',
         },
+        roomNumber: {
+          label: {
+            en: 'Hale Number',
+            es: 'Número de Hale',
+          },
+          placeholder: {
+            en: 'Enter hale number',
+            es: 'Ingrese número de hale',
+          },
+        },
         lastName: {
           label: {
             en: 'Last Name',
