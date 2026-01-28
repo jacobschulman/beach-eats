@@ -18,6 +18,12 @@ export const serviceConfig = {
     demo: '/demo',
     resorts: '/resorts',
   },
+
+  // Base URL for GitHub Pages (matches vite.config.js base)
+  getBaseUrl: () => {
+    // For GitHub Pages deployment, include the repository name
+    return window.location.origin + '/beach-eats';
+  },
 };
 
 export default serviceConfig;

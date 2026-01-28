@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
+import { serviceConfig } from '../config/service';
 
 const CONFIG_PARAM = 'config';
 
@@ -198,7 +199,7 @@ function mergeMenuItems(defaults, stored) {
 // Generate shareable URL with current config
 export function generateShareURL(menu, mode = '', resortConfig, resortId) {
   const encoded = encodeConfig(menu, resortConfig);
-  const baseUrl = window.location.origin;
+  const baseUrl = serviceConfig.getBaseUrl();
 
   // NEW path-based URLs
   let url = `${baseUrl}/resorts/${resortId}`;

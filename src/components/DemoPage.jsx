@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getAllResorts } from '../config/resorts/index';
+import { serviceConfig } from '../config/service';
 import styles from './DemoPage.module.css';
 
 // Generate QR code URL using QR Server API
@@ -13,9 +14,9 @@ export default function DemoPage() {
 
   useEffect(() => {
     document.title = 'Beach Eats - Multi-Resort Demo';
-    // Get the current base URL
-    const url = window.location.origin + window.location.pathname;
-    setBaseUrl(url.replace(/\/$/, ''));
+    // Get the base URL including GitHub Pages path
+    const url = serviceConfig.getBaseUrl();
+    setBaseUrl(url);
   }, []);
 
   const openLink = (url) => {

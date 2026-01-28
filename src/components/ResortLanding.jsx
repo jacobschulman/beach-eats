@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getResortConfig } from '../config/resorts/index';
+import { serviceConfig } from '../config/service';
 import styles from './DemoPage.module.css';
 
 // Generate QR code URL using QR Server API
@@ -24,7 +25,7 @@ export default function ResortLanding() {
     }
 
     document.title = `${resort.branding.name.en} - Demo`;
-    const url = window.location.origin;
+    const url = serviceConfig.getBaseUrl();
     setBaseUrl(url);
   }, [resort, navigate]);
 

@@ -46,7 +46,7 @@ function LegacyRedirect() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/beach-eats">
       <AppProvider>
         <LegacyRedirect />
         <Routes>
