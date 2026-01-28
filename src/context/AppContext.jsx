@@ -323,18 +323,8 @@ const AppContext = createContext(null);
 
 // Provider component
 export function AppProvider({ children }) {
-  // Detect resort and create initial state
-  const resortId = detectCurrentResort();
-  const [state, dispatch] = useReducer(appReducer, createInitialState(resortId));
-
-  // Save resort selection if it came from URL
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlResort = urlParams.get('resort');
-    if (urlResort) {
-      saveResortSelection(urlResort);
-    }
-  }, []);
+  // Initialize with default resort (route wrappers will call setResort)
+  const [state, dispatch] = useReducer(appReducer, createInitialState(defaultResortId));
 
   // Apply theme CSS variables when resort changes
   useEffect(() => {
@@ -437,6 +427,12 @@ export function AppProvider({ children }) {
     dispatch({ type: ACTIONS.RESET_CURRENT_ITEM });
   }, []);
 
+  // Resort management
+  const setResort = useCallback((resortId) => {
+    dispatch({ type: ACTIONS.SET_RESORT, payload: resortId });
+    saveResortSelection(resortId);
+  }, []);
+
   const value = {
     // State
     ...state,
@@ -448,6 +444,9 @@ export function AppProvider({ children }) {
     // Navigation
     goToStep,
     setSelectedCategory,
+
+    // Resort management
+    setResort,
 
     // Item building
     setProtein,

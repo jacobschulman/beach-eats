@@ -1,0 +1,23 @@
+// Service-level configuration
+// This file contains branding and settings that apply across all resorts
+// Making it easy to white-label or rebrand the entire platform
+
+export const serviceConfig = {
+  // Service branding (change here to rebrand entire platform)
+  name: 'Beach Eats',
+  tagline: 'Multi-Resort Digital Ordering Platform',
+  description: 'A complete digital ordering solution for beach and pool service',
+
+  // Password for accessing config dashboard
+  configPassword: 'beacheats',
+
+  // Route paths (for consistency)
+  routes: {
+    home: '/',
+    config: '/config',
+    demo: '/demo',
+    resorts: '/resorts',
+  },
+};
+
+export default serviceConfig;

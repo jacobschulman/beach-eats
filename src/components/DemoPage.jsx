@@ -41,9 +41,9 @@ export default function DemoPage() {
         </div>
 
         {allResorts.map((resort) => {
-          const guestUrl = `${baseUrl}?resort=${resort.id}`;
-          const kitchenUrl = `${baseUrl}?resort=${resort.id}&chef`;
-          const adminUrl = `${baseUrl}?resort=${resort.id}&admin`;
+          const guestUrl = `${baseUrl}/resorts/${resort.id}`;
+          const kitchenUrl = `${baseUrl}/resorts/${resort.id}/kitchen`;
+          const adminUrl = `${baseUrl}/resorts/${resort.id}/menu`;
 
           return (
             <div key={resort.id} className={styles.resortSection}>

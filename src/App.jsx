@@ -1,89 +1,80 @@
-import { AppProvider, useApp } from './context/AppContext';
-import LanguageToggle from './components/LanguageToggle';
-import Welcome from './components/Welcome';
-import MenuPage from './components/MenuPage';
-import CategoryPage from './components/CategoryPage';
-import Modifications from './components/Modifications';
-import ProteinStep from './components/ProteinStep';
-import FormatStep from './components/FormatStep';
-import AddonsStep from './components/AddonsStep';
-import OrderSummary from './components/OrderSummary';
-import Checkout from './components/Checkout';
-import Confirmation from './components/Confirmation';
-import KitchenDisplay from './components/KitchenDisplay';
-import ChefDemo from './components/ChefDemo';
-import MenuAdmin from './components/MenuAdmin';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { AppProvider } from './context/AppContext';
+import { serviceConfig } from './config/service';
+
+// New components
+import MarketingHome from './components/MarketingHome';
+import ConfigDashboard from './components/ConfigDashboard';
+import ResortLanding from './components/ResortLanding';
+import PasswordGate from './components/PasswordGate';
+import OrderingFlow from './components/OrderingFlow';
+import KitchenWrapper from './components/KitchenWrapper';
+import MenuAdminWrapper from './components/MenuAdminWrapper';
 import DemoPage from './components/DemoPage';
+
 import './App.css';
 
-// Check for special modes via URL params
-const urlParams = new URLSearchParams(window.location.search);
-const isChefDemo = urlParams.has('chef');
-const isAdmin = urlParams.has('admin');
-const isDemo = urlParams.has('demo');
+// Legacy URL redirect component (for backward compatibility)
+function LegacyRedirect() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-function AppContent() {
-  const { currentStep } = useApp();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const resort = params.get('resort');
+    const isChef = params.has('chef');
+    const isAdmin = params.has('admin');
+    const isDemo = params.has('demo');
 
-  // Demo mode - presentation page with QR codes
-  if (isDemo) {
-    return <DemoPage />;
-  }
-
-  // Admin mode - menu management
-  if (isAdmin) {
-    return <MenuAdmin />;
-  }
-
-  // Chef demo mode - direct kitchen view
-  if (isChefDemo) {
-    return <ChefDemo />;
-  }
-
-  const renderStep = () => {
-    switch (currentStep) {
-      case 'welcome':
-        return <Welcome />;
-      case 'menu':
-        return <MenuPage />;
-      case 'category':
-        return <CategoryPage />;
-      case 'modifications':
-        return <Modifications />;
-      case 'protein':
-        return <ProteinStep />;
-      case 'format':
-        return <FormatStep />;
-      case 'addons':
-        return <AddonsStep />;
-      case 'summary':
-        return <OrderSummary />;
-      case 'checkout':
-        return <Checkout />;
-      case 'confirmation':
-        return <Confirmation />;
-      case 'kitchen':
-        return <KitchenDisplay />;
-      default:
-        return <Welcome />;
+    if (isDemo) {
+      navigate('/demo', { replace: true });
+    } else if (resort) {
+      if (isChef) {
+        navigate(`/resorts/${resort}/kitchen`, { replace: true });
+      } else if (isAdmin) {
+        navigate(`/resorts/${resort}/menu`, { replace: true });
+      } else {
+        // Default to ordering flow (root resort path)
+        navigate(`/resorts/${resort}`, { replace: true });
+      }
     }
-  };
+  }, [location, navigate]);
 
-  return (
-    <div className="app">
-      <LanguageToggle />
-      <div className="pageContainer" key={currentStep}>
-        {renderStep()}
-      </div>
-    </div>
-  );
+  return null; // Redirects only, no rendering
 }
 
 function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <BrowserRouter>
+      <AppProvider>
+        <LegacyRedirect />
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<MarketingHome />} />
+          <Route path="/demo" element={<DemoPage />} />
+
+          {/* Protected config dashboard */}
+          <Route
+            path="/config"
+            element={
+              <PasswordGate password={serviceConfig.configPassword}>
+                <ConfigDashboard />
+              </PasswordGate>
+            }
+          />
+
+          {/* Resort routes */}
+          <Route path="/resorts/:resortKey" element={<OrderingFlow />} />
+          <Route path="/resorts/:resortKey/demo" element={<ResortLanding />} />
+          <Route path="/resorts/:resortKey/kitchen" element={<KitchenWrapper />} />
+          <Route path="/resorts/:resortKey/menu" element={<MenuAdminWrapper />} />
+
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppProvider>
+    </BrowserRouter>
   );
 }
 

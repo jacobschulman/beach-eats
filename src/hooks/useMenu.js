@@ -198,16 +198,23 @@ function mergeMenuItems(defaults, stored) {
 // Generate shareable URL with current config
 export function generateShareURL(menu, mode = '', resortConfig, resortId) {
   const encoded = encodeConfig(menu, resortConfig);
-  const baseUrl = window.location.origin + window.location.pathname;
+  const baseUrl = window.location.origin;
 
-  // Build params array
-  const params = [];
-  if (resortId) params.push(`resort=${resortId}`);
-  if (mode) params.push(mode);
-  if (encoded) params.push(`${CONFIG_PARAM}=${encoded}`);
+  // NEW path-based URLs
+  let url = `${baseUrl}/resorts/${resortId}`;
 
-  const queryString = params.length > 0 ? '?' + params.join('&') : '';
-  return `${baseUrl}${queryString}`;
+  if (mode === 'admin' || mode === 'menu') {
+    url += '/menu';
+  } else if (mode === 'chef' || mode === 'kitchen') {
+    url += '/kitchen';
+  }
+  // else: default ordering page (no suffix needed, already at /resorts/:resortKey)
+
+  if (encoded) {
+    url += `?${CONFIG_PARAM}=${encoded}`;
+  }
+
+  return url;
 }
 
 export function useMenu() {
