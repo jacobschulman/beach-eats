@@ -11,6 +11,16 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
+// ---- DEBUG LOG (visible in UI via getDebugLog) ----
+const _debugLog = [];
+function debugLog(msg) {
+  const entry = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  _debugLog.push(entry);
+  if (_debugLog.length > 20) _debugLog.shift();
+  console.log('[orderService]', msg);
+}
+export function getDebugLog() { return [..._debugLog]; }
+
 // ---- FIRESTORE OPERATIONS ----
 
 function getOrdersCollection(resortId) {
@@ -21,11 +31,16 @@ function getOrdersCollection(resortId) {
  * Save a new order to Firestore + localStorage.
  */
 export async function saveOrder(resortId, order) {
+  debugLog(`saveOrder called: resort=${resortId}, order=${order.orderNumber}`);
   // Always save to localStorage as fallback/cache
   saveOrderToLocalStorage(resortId, order);
 
-  if (!isFirebaseAvailable()) return;
+  if (!isFirebaseAvailable()) {
+    debugLog('Firebase NOT available — localStorage only');
+    return;
+  }
 
+  debugLog('Firebase available, writing to Firestore...');
   try {
     const orderRef = doc(db, 'resorts', resortId, 'orders', order.orderNumber);
     await setDoc(orderRef, {
@@ -33,7 +48,9 @@ export async function saveOrder(resortId, order) {
       status: 'new',
       createdAt: serverTimestamp(),
     });
+    debugLog(`Firestore write SUCCESS: ${order.orderNumber}`);
   } catch (error) {
+    debugLog(`Firestore write FAILED: ${error.code || error.message}`);
     console.warn('Firestore saveOrder failed, localStorage fallback active:', error);
   }
 }
@@ -43,10 +60,14 @@ export async function saveOrder(resortId, order) {
  * Returns an unsubscribe function.
  */
 export function subscribeToOrders(resortId, callback) {
+  debugLog(`subscribeToOrders called: resort=${resortId}, firebase=${isFirebaseAvailable()}`);
+
   if (!isFirebaseAvailable()) {
+    debugLog('Firebase NOT available — using localStorage subscription');
     return subscribeToOrdersLocalStorage(resortId, callback);
   }
 
+  debugLog('Setting up Firestore onSnapshot listener...');
   const q = query(
     getOrdersCollection(resortId),
     orderBy('createdAt', 'desc'),
@@ -54,6 +75,7 @@ export function subscribeToOrders(resortId, callback) {
   );
 
   return onSnapshot(q, (snapshot) => {
+    debugLog(`onSnapshot received: ${snapshot.docs.length} docs`);
     const orders = snapshot.docs.map((d) => ({
       ...d.data(),
       // Ensure status has a default
@@ -61,8 +83,9 @@ export function subscribeToOrders(resortId, callback) {
     }));
     callback(orders);
   }, (error) => {
+    debugLog(`onSnapshot ERROR: ${error.code || error.message}`);
     console.warn('Firestore subscription error, falling back to localStorage:', error);
-    return subscribeToOrdersLocalStorage(resortId, callback);
+    subscribeToOrdersLocalStorage(resortId, callback);
   });
 }
 

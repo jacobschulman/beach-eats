@@ -1,8 +1,19 @@
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { getDebugLog } from '../services/orderService';
+import { isFirebaseAvailable } from '../config/firebase';
 import styles from './Confirmation.module.css';
 
 export default function Confirmation() {
   const { t, order, resetOrder } = useApp();
+  const [debugLog, setDebugLog] = useState([]);
+  const [showDebug, setShowDebug] = useState(false);
+
+  useEffect(() => {
+    // Grab log after order save has had time to complete
+    const timer = setTimeout(() => setDebugLog(getDebugLog()), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleNewOrder = () => {
     resetOrder();
@@ -38,6 +49,23 @@ export default function Confirmation() {
         <button className={styles.newOrderButton} onClick={handleNewOrder}>
           {t('steps.confirmation.newOrder')}
         </button>
+
+        {/* Debug — remove after fixing */}
+        <div
+          onClick={() => setShowDebug(!showDebug)}
+          style={{
+            marginTop: '24px', padding: '8px 12px', background: '#f5f2ed',
+            borderRadius: '6px', fontSize: '11px', fontFamily: 'monospace',
+            color: '#666', cursor: 'pointer', textAlign: 'left',
+          }}
+        >
+          <div>Firebase: {isFirebaseAvailable() ? '✓ connected' : '✗ NOT available'} | {showDebug ? 'hide' : 'show log'}</div>
+          {showDebug && debugLog.map((entry, i) => (
+            <div key={i} style={{ marginTop: '4px', color: entry.includes('FAILED') || entry.includes('NOT') ? '#b85c5c' : '#38a169' }}>
+              {entry}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
