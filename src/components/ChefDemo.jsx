@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { formatOrderItem } from '../config/menu';
 import { useApp } from '../context/AppContext';
+import { subscribeToOrders, updateOrderStatus } from '../services/orderService';
 import styles from './ChefDemo.module.css';
 
 // Kitchen display translations
@@ -56,78 +57,19 @@ const statusConfig = {
   done: { color: '#718096', next: null, actionKey: null },
 };
 
-// Load persisted statuses from localStorage
-const loadPersistedStatuses = () => {
-  try {
-    const stored = localStorage.getItem('kitchenOrderStatuses');
-    return stored ? JSON.parse(stored) : {};
-  } catch {
-    return {};
-  }
-};
-
-// Save statuses to localStorage
-const saveStatuses = (statuses) => {
-  try {
-    localStorage.setItem('kitchenOrderStatuses', JSON.stringify(statuses));
-  } catch (e) {
-    console.warn('Could not save order statuses', e);
-  }
-};
-
 export default function ChefDemo() {
   const { resortId } = useApp();
   const [orders, setOrders] = useState([]);
-  const [orderStatuses, setOrderStatuses] = useState(loadPersistedStatuses);
   const [language, setLanguage] = useState('en');
   const t = kitchenText[language];
 
-  // Load orders from localStorage and poll for updates
+  // Subscribe to real-time order updates
   useEffect(() => {
     if (!resortId) return;
-
-    const loadOrders = () => {
-      try {
-        const storageKey = `kitchen-orders-${resortId}`;
-        const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        // Filter out malformed orders and deduplicate by orderNumber
-        const seen = new Set();
-        const validOrders = stored.filter(order => {
-          if (!order || !order.orderNumber || !order.items || !Array.isArray(order.items)) {
-            return false;
-          }
-          if (seen.has(order.orderNumber)) {
-            return false;
-          }
-          seen.add(order.orderNumber);
-          return true;
-        });
-        // Save deduplicated list back to localStorage
-        if (validOrders.length !== stored.length) {
-          localStorage.setItem(storageKey, JSON.stringify(validOrders));
-        }
-        setOrders(validOrders);
-        // Initialize status for new orders
-        setOrderStatuses(prev => {
-          const updated = { ...prev };
-          let hasChanges = false;
-          validOrders.forEach(order => {
-            if (order.orderNumber && !updated[order.orderNumber]) {
-              updated[order.orderNumber] = 'new';
-              hasChanges = true;
-            }
-          });
-          return hasChanges ? updated : prev;
-        });
-      } catch (e) {
-        console.warn('Could not load orders', e);
-      }
-    };
-
-    loadOrders();
-    // Poll every 2 seconds for new orders
-    const interval = setInterval(loadOrders, 2000);
-    return () => clearInterval(interval);
+    const unsubscribe = subscribeToOrders(resortId, (ordersFromService) => {
+      setOrders(ordersFromService);
+    });
+    return () => unsubscribe();
   }, [resortId]);
 
   // Set page title for kitchen view
@@ -152,14 +94,11 @@ export default function ChefDemo() {
   };
 
   const updateStatus = (orderNum) => {
-    const currentStatus = orderStatuses[orderNum] || 'new';
+    const order = orders.find(o => o.orderNumber === orderNum);
+    const currentStatus = order?.status || 'new';
     const nextStatus = statusConfig[currentStatus].next;
     if (nextStatus) {
-      setOrderStatuses(prev => {
-        const updated = { ...prev, [orderNum]: nextStatus };
-        saveStatuses(updated);
-        return updated;
-      });
+      updateOrderStatus(resortId, orderNum, nextStatus);
     }
   };
 
@@ -198,17 +137,16 @@ export default function ChefDemo() {
       ? new Date(order.placedAt).toLocaleTimeString(language === 'es' ? 'es-MX' : 'en-US', { hour: '2-digit', minute: '2-digit' })
       : '--:--',
     placedAt: order.placedAt,
-    status: orderStatuses[order.orderNumber] || 'new',
+    status: order.status || 'new',
   }));
 
   const activeOrders = displayOrders.filter(o => o.status !== 'done');
   const noOrders = activeOrders.length === 0;
 
   const clearOrders = () => {
-    localStorage.removeItem('kitchenOrders');
+    localStorage.removeItem(`kitchen-orders-${resortId}`);
     localStorage.removeItem('kitchenOrderStatuses');
     setOrders([]);
-    setOrderStatuses({});
   };
 
   return (
