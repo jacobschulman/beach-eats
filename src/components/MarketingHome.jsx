@@ -1,145 +1,143 @@
 import { useNavigate } from 'react-router-dom';
-import { serviceConfig } from '../config/service';
-import styles from './DemoPage.module.css'; // Reuse DemoPage styles
+import styles from './MarketingHome.module.css';
 
 export default function MarketingHome() {
   const navigate = useNavigate();
 
   return (
-    <div className={styles.demoPage}>
+    <div className={styles.page}>
+
+      {/* Header */}
       <header className={styles.header}>
-        <div className={styles.logoArea}>
-          <h1 className={styles.title}>{serviceConfig.name}</h1>
-          <p className={styles.subtitle}>{serviceConfig.tagline}</p>
-        </div>
+        <h1 className={styles.brandName}>Beach Eats</h1>
+        <button
+          className={styles.headerLink}
+          onClick={() => navigate('/demo')}
+        >
+          Request a Demo
+        </button>
       </header>
 
-      <main className={styles.content}>
-        {/* Hero Section */}
-        <div className={styles.intro}>
-          <h2>Complete Digital Ordering Solution</h2>
-          <p>{serviceConfig.description}</p>
-        </div>
+      {/* Hero */}
+      <section className={styles.hero}>
+        <h2 className={styles.heroHeadline}>
+          Digital ordering for resort hospitality
+        </h2>
+        <p className={styles.heroSub}>
+          Built from both sides of service — by people who've been the guest
+          waiting, and who understand what your team needs to deliver.
+        </p>
+        <button
+          className={styles.heroCta}
+          onClick={() => navigate('/demo')}
+        >
+          See It in Action
+        </button>
+      </section>
 
-        {/* Features Grid */}
-        <div className={styles.cardsGrid}>
-          {/* Guest Ordering */}
-          <div className={styles.card} style={{ '--accent-color': '#c45d3a' }}>
-            <div className={styles.cardHeader}>
-              <span className={styles.cardIcon}>📱</span>
-              <h3 className={styles.cardTitle}>Guest Ordering</h3>
-            </div>
-            <p className={styles.cardDesc}>
-              Mobile-friendly ordering experience for your guests. Bilingual support (EN/ES),
-              custom branding, and seamless integration with your beach or pool service.
+      <hr className={styles.divider} />
+
+      {/* Pillars */}
+      <section className={styles.pillarsSection}>
+        <p className={styles.sectionLabel}>Why Beach Eats</p>
+
+        <div className={styles.pillarsGrid}>
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarHeadline}>
+              Elevate the guest experience
+            </h3>
+            <p className={styles.pillarBody}>
+              We built this because we've been the guest — settled into a lounge
+              chair, ready to order, watching staff walk past. Beach Eats puts
+              ordering in your guests' hands. Bilingual, allergy-aware, and
+              designed to feel like a natural extension of your resort — not a
+              tech product bolted on.
             </p>
-            <ul style={{ textAlign: 'left', fontSize: '14px', color: '#666', lineHeight: '1.8' }}>
-              <li>QR code ordering from any location</li>
-              <li>Build-your-own and pre-designed items</li>
-              <li>Allergy alerts and dietary restrictions</li>
-              <li>Real-time order confirmation</li>
-            </ul>
           </div>
 
-          {/* Kitchen POS */}
-          <div className={styles.card} style={{ '--accent-color': '#38a169' }}>
-            <div className={styles.cardHeader}>
-              <span className={styles.cardIcon}>👨‍🍳</span>
-              <h3 className={styles.cardTitle}>Kitchen Display</h3>
-            </div>
-            <p className={styles.cardDesc}>
-              Real-time order tracking for kitchen staff. Simple interface optimized for
-              speed and efficiency during high-volume service periods.
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarHeadline}>
+              Simplify shifts &amp; increase efficiency
+            </h3>
+            <p className={styles.pillarBody}>
+              Orders flow directly to a real-time kitchen display — no paper
+              tickets getting lost, no miscommunication across the pool deck.
+              Your team spends less time taking orders and more time delivering
+              great service. Menu changes happen in seconds.
             </p>
-            <ul style={{ textAlign: 'left', fontSize: '14px', color: '#666', lineHeight: '1.8' }}>
-              <li>Live order queue with timestamps</li>
-              <li>Order status management (pending/preparing/ready/delivered)</li>
-              <li>Delivery location tracking</li>
-              <li>Isolated per resort for data privacy</li>
-            </ul>
           </div>
 
-          {/* Menu CMS */}
-          <div className={styles.card} style={{ '--accent-color': '#3182ce' }}>
-            <div className={styles.cardHeader}>
-              <span className={styles.cardIcon}>⚙️</span>
-              <h3 className={styles.cardTitle}>Menu Manager</h3>
-            </div>
-            <p className={styles.cardDesc}>
-              Easy-to-use CMS for updating menu items, prices, and availability in real-time.
-              No technical knowledge required.
+          <div className={styles.pillar}>
+            <h3 className={styles.pillarHeadline}>
+              Drive incremental revenue
+            </h3>
+            <p className={styles.pillarBody}>
+              When ordering is effortless, guests order more — it's that simple.
+              Capture the revenue you lose every time someone decides it's not
+              worth flagging down a server. Built-in customization and add-ons
+              lift average ticket naturally, without any upsell pressure your
+              guests can feel.
             </p>
-            <ul style={{ textAlign: 'left', fontSize: '14px', color: '#666', lineHeight: '1.8' }}>
-              <li>Update prices and availability instantly</li>
-              <li>Toggle items on/off as needed</li>
-              <li>Generate shareable QR codes</li>
-              <li>Cross-device sync for multiple managers</li>
-            </ul>
           </div>
         </div>
+      </section>
 
-        {/* Platform Features */}
-        <div className={styles.features}>
-          <h3>Platform Features</h3>
-          <div className={styles.featureGrid}>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>🏨</span>
-              <span>Multi-resort support</span>
+      <hr className={styles.divider} />
+
+      {/* Product Overview */}
+      <section className={styles.productSection}>
+        <div className={styles.productInner}>
+          <p className={styles.sectionLabel}>The Platform</p>
+
+          <div className={styles.productsGrid}>
+            <div className={styles.productCard}>
+              <h3 className={styles.productTitle}>Guest Ordering</h3>
+              <p className={styles.productBody}>
+                A mobile ordering experience that feels like your resort, not a
+                tech demo. QR code to confirmation in under a minute —
+                bilingual, allergy-aware, fully branded.
+              </p>
             </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>🌐</span>
-              <span>Bilingual (EN/ES)</span>
+
+            <div className={styles.productCard}>
+              <h3 className={styles.productTitle}>Kitchen Display</h3>
+              <p className={styles.productBody}>
+                A real-time order queue built for the pace of high-volume
+                service. Every order timestamped, tracked, and visible — no
+                paper, no shouting, no guessing.
+              </p>
             </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>⚡</span>
-              <span>Real-time sync</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>📱</span>
-              <span>Mobile-first design</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>🔧</span>
-              <span>Easy CMS management</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>⚠️</span>
-              <span>Allergy alerts</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>🎨</span>
-              <span>Custom branding per resort</span>
-            </div>
-            <div className={styles.feature}>
-              <span className={styles.featureIcon}>🔒</span>
-              <span>Isolated data per resort</span>
+
+            <div className={styles.productCard}>
+              <h3 className={styles.productTitle}>Menu Manager</h3>
+              <p className={styles.productBody}>
+                Your menu, updated in seconds. Toggle availability, adjust
+                pricing, generate QR codes — all from your phone, no developer
+                required.
+              </p>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* CTA Section */}
-        <div style={{ textAlign: 'center', marginTop: '48px' }}>
-          <button
-            onClick={() => navigate('/config')}
-            className={styles.openBtn}
-            style={{
-              backgroundColor: '#c45d3a',
-              fontSize: '16px',
-              padding: '16px 32px',
-              maxWidth: '300px'
-            }}
-          >
-            Access Configuration
-          </button>
-          <p style={{ marginTop: '16px', fontSize: '14px', color: '#999' }}>
-            Manage resorts and view system demo
-          </p>
-        </div>
-      </main>
+      <hr className={styles.divider} />
 
+      {/* CTA */}
+      <section className={styles.ctaSection}>
+        <h2 className={styles.ctaHeadline}>Ready to see it live?</h2>
+        <button
+          className={styles.ctaPrimary}
+          onClick={() => navigate('/demo')}
+        >
+          Get a Demo
+        </button>
+      </section>
+
+      {/* Footer */}
       <footer className={styles.footer}>
-        <p>{serviceConfig.name} - {serviceConfig.tagline}</p>
+        <p className={styles.footerText}>Beach Eats</p>
       </footer>
+
     </div>
   );
 }

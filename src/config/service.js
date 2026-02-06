@@ -5,8 +5,8 @@
 export const serviceConfig = {
   // Service branding (change here to rebrand entire platform)
   name: 'Beach Eats',
-  tagline: 'Multi-Resort Digital Ordering Platform',
-  description: 'A complete digital ordering solution for beach and pool service',
+  tagline: 'Digital Ordering for Resort Hospitality',
+  description: 'Built from both sides of service — by people who\'ve been the guest waiting, and who understand what your team needs to deliver.',
 
   // Password for accessing config dashboard
   configPassword: 'beacheats',

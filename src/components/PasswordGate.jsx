@@ -1,26 +1,27 @@
 import { useState, useEffect } from 'react';
 import styles from './Welcome.module.css'; // Reuse Welcome styles for consistency
 
-const SESSION_KEY = 'beach-eats-auth';
+const DEFAULT_SESSION_KEY = 'beach-eats-auth';
 
-export default function PasswordGate({ children, password }) {
+export default function PasswordGate({ children, password, sessionKey, title, subtitle }) {
+  const storageKey = sessionKey || DEFAULT_SESSION_KEY;
   const [inputPassword, setInputPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState('');
 
   // Check session storage on mount
   useEffect(() => {
-    const stored = sessionStorage.getItem(SESSION_KEY);
+    const stored = sessionStorage.getItem(storageKey);
     if (stored === password) {
       setIsAuthenticated(true);
     }
-  }, [password]);
+  }, [password, storageKey]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (inputPassword === password) {
-      sessionStorage.setItem(SESSION_KEY, password);
+      sessionStorage.setItem(storageKey, password);
       setIsAuthenticated(true);
       setError('');
     } else {
@@ -39,8 +40,8 @@ export default function PasswordGate({ children, password }) {
     <div className={styles.container}>
       <div className={styles.content}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Protected Access</h1>
-          <p className={styles.subtitle}>Enter password to continue</p>
+          <h1 className={styles.title}>{title || 'Protected Access'}</h1>
+          <p className={styles.subtitle}>{subtitle || 'Enter password to continue'}</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
