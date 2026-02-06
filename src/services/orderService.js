@@ -23,6 +23,19 @@ export function getDebugLog() { return [..._debugLog]; }
 
 // ---- FIRESTORE OPERATIONS ----
 
+// Strip undefined values recursively — Firestore rejects undefined
+function stripUndefined(obj) {
+  if (Array.isArray(obj)) return obj.map(stripUndefined);
+  if (obj !== null && typeof obj === 'object' && !(obj instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, stripUndefined(v)])
+    );
+  }
+  return obj;
+}
+
 function getOrdersCollection(resortId) {
   return collection(db, 'resorts', resortId, 'orders');
 }
@@ -42,9 +55,10 @@ export async function saveOrder(resortId, order) {
 
   debugLog('Firebase available, writing to Firestore...');
   try {
+    const cleanOrder = stripUndefined(order);
     const orderRef = doc(db, 'resorts', resortId, 'orders', order.orderNumber);
     await setDoc(orderRef, {
-      ...order,
+      ...cleanOrder,
       status: 'new',
       createdAt: serverTimestamp(),
     });
