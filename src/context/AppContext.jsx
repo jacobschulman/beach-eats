@@ -1,5 +1,6 @@
-import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import { createContext, useContext, useReducer, useCallback, useEffect, useRef } from 'react';
 import { getResortConfig, defaultResortId } from '../config/resorts/index';
+import { saveOrder } from '../services/orderService';
 
 // Detect current resort from URL or localStorage
 function detectCurrentResort() {
@@ -258,32 +259,6 @@ function appReducer(state, action) {
         orderNumber,
         placedAt: new Date().toISOString(),
       };
-      // Save to resort-specific localStorage key for kitchen display
-      try {
-        const storageKey = `kitchen-orders-${state.resortId}`;
-        const existingOrders = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        // Check if we recently placed an order (within 5 seconds) to prevent duplicates
-        const recentOrder = existingOrders[0];
-        if (recentOrder) {
-          const recentTime = new Date(recentOrder.placedAt).getTime();
-          const timeDiff = timestamp - recentTime;
-          // If last order was less than 5 seconds ago and has same items count, skip
-          if (timeDiff < 5000 && recentOrder.items?.length === state.order.items?.length) {
-            return {
-              ...state,
-              order: {
-                ...state.order,
-                orderNumber: recentOrder.orderNumber,
-              },
-            };
-          }
-        }
-        existingOrders.unshift(completedOrder);
-        // Keep last 20 orders
-        localStorage.setItem(storageKey, JSON.stringify(existingOrders.slice(0, 20)));
-      } catch (e) {
-        console.warn('Could not save to localStorage', e);
-      }
       return {
         ...state,
         order: {
@@ -345,6 +320,16 @@ export function AppProvider({ children }) {
     const resortName = state.resortConfig.branding.name.en;
     document.title = `${resortName} - Beach Ordering`;
   }, [state.resortId, state.resortConfig]);
+
+  // Persist order to Firestore + localStorage when placed
+  const orderRef = useRef(null);
+  useEffect(() => {
+    const { orderNumber, items, guestInfo, placedAt } = state.order;
+    if (orderNumber && orderNumber !== orderRef.current) {
+      orderRef.current = orderNumber;
+      saveOrder(state.resortId, { items, guestInfo, orderNumber, placedAt });
+    }
+  }, [state.order.orderNumber, state.resortId, state.order]);
 
   // Language actions
   const toggleLanguage = useCallback(() => {
