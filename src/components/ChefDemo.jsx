@@ -85,10 +85,14 @@ export default function ChefDemo() {
     return () => clearInterval(interval);
   }, []);
 
-  // Format timer display
+  // Format timer display — handles JS dates, ISO strings, and Firestore Timestamps
   const getTimerDisplay = (placedAt) => {
     if (!placedAt) return '0:00';
-    const elapsed = Math.floor((currentTime - new Date(placedAt).getTime()) / 1000);
+    const ms = placedAt.toDate ? placedAt.toDate().getTime()
+      : placedAt.seconds ? placedAt.seconds * 1000
+      : new Date(placedAt).getTime();
+    if (isNaN(ms)) return '0:00';
+    const elapsed = Math.floor((currentTime - ms) / 1000);
     const mins = Math.floor(elapsed / 60);
     const secs = elapsed % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -134,9 +138,12 @@ export default function ChefDemo() {
       });
       return Object.values(grouped);
     })(),
-    time: order.placedAt
-      ? new Date(order.placedAt).toLocaleTimeString(language === 'es' ? 'es-MX' : 'en-US', { hour: '2-digit', minute: '2-digit' })
-      : '--:--',
+    time: (() => {
+      const pa = order.placedAt;
+      if (!pa) return '--:--';
+      const d = pa.toDate ? pa.toDate() : pa.seconds ? new Date(pa.seconds * 1000) : new Date(pa);
+      return isNaN(d.getTime()) ? '--:--' : d.toLocaleTimeString(language === 'es' ? 'es-MX' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+    })(),
     placedAt: order.placedAt,
     status: order.status || 'new',
   }));
