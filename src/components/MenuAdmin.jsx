@@ -1,26 +1,15 @@
 import { useState, useEffect } from 'react';
-import { proteins as defaultProteins, formats as defaultFormats, addons as defaultAddons, menuItems as defaultMenuItems, exclusions as defaultExclusions } from '../config/menu';
+import { useApp } from '../context/AppContext';
 import { generateShareURL } from '../hooks/useMenu';
 import styles from './MenuAdmin.module.css';
-
-const STORAGE_KEY = 'beachEatsMenuConfig';
 
 // Generate QR code URL
 const getQRCodeUrl = (url, size = 180) => {
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=2d2d2d`;
 };
 
-function getStoredMenu() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveMenu(menu) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(menu));
+function getStorageKey(resortId) {
+  return `beach-eats-menu-${resortId}`;
 }
 
 function initializeWithPrices(items, defaultPrice = 0) {
@@ -43,19 +32,59 @@ function initializeMenuItems(menuItems) {
   return result;
 }
 
-export default function MenuAdmin() {
-  const [activeTab, setActiveTab] = useState('proteins');
-  const [menu, setMenu] = useState(() => {
-    const stored = getStoredMenu();
-    if (stored) return stored;
-    return {
-      proteins: initializeWithPrices(defaultProteins),
-      formats: initializeWithPrices(defaultFormats),
-      addons: initializeWithPrices(defaultAddons),
-      exclusions: initializeWithPrices(defaultExclusions),
-      menuItems: initializeMenuItems(defaultMenuItems),
-    };
+function getDefaultMenu(resortConfig) {
+  const menuConfig = resortConfig.menu;
+  return {
+    proteins: initializeWithPrices(menuConfig.proteins),
+    formats: initializeWithPrices(menuConfig.formats),
+    addons: initializeWithPrices(menuConfig.addons),
+    exclusions: initializeWithPrices(menuConfig.exclusions),
+    menuItems: initializeMenuItems(menuConfig.menuItems),
+  };
+}
+
+function mergeItems(defaults, stored) {
+  if (!stored) return defaults;
+  return defaults.map(defaultItem => {
+    const storedItem = stored.find(s => s.id === defaultItem.id);
+    return storedItem ? { ...defaultItem, ...storedItem } : defaultItem;
   });
+}
+
+function mergeMenuItems(defaults, stored) {
+  if (!stored) return defaults;
+  const result = {};
+  Object.keys(defaults).forEach(category => {
+    result[category] = mergeItems(defaults[category], stored[category]);
+  });
+  return result;
+}
+
+function getStoredMenu(resortConfig, resortId) {
+  const storageKey = getStorageKey(resortId);
+  try {
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      const defaults = getDefaultMenu(resortConfig);
+      return {
+        proteins: mergeItems(defaults.proteins, parsed.proteins),
+        formats: mergeItems(defaults.formats, parsed.formats),
+        addons: mergeItems(defaults.addons, parsed.addons),
+        exclusions: mergeItems(defaults.exclusions, parsed.exclusions),
+        menuItems: mergeMenuItems(defaults.menuItems, parsed.menuItems),
+      };
+    }
+  } catch {
+    // Fall through to defaults
+  }
+  return getDefaultMenu(resortConfig);
+}
+
+export default function MenuAdmin() {
+  const { resortConfig, resortId } = useApp();
+  const [activeTab, setActiveTab] = useState('proteins');
+  const [menu, setMenu] = useState(() => getStoredMenu(resortConfig, resortId));
   const [saved, setSaved] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('picaditos');
   const [showShareModal, setShowShareModal] = useState(false);
@@ -65,6 +94,12 @@ export default function MenuAdmin() {
     document.title = 'Beach Eats Admin';
   }, []);
 
+  const storageKey = getStorageKey(resortId);
+
+  const saveMenu = (menuData) => {
+    localStorage.setItem(storageKey, JSON.stringify(menuData));
+  };
+
   const handleSave = () => {
     saveMenu(menu);
     setSaved(true);
@@ -73,13 +108,7 @@ export default function MenuAdmin() {
 
   const handleReset = () => {
     if (confirm('Reset all menu items to defaults? This cannot be undone.')) {
-      const defaultMenu = {
-        proteins: initializeWithPrices(defaultProteins),
-        formats: initializeWithPrices(defaultFormats),
-        addons: initializeWithPrices(defaultAddons),
-        exclusions: initializeWithPrices(defaultExclusions),
-        menuItems: initializeMenuItems(defaultMenuItems),
-      };
+      const defaultMenu = getDefaultMenu(resortConfig);
       setMenu(defaultMenu);
       saveMenu(defaultMenu);
       setSaved(true);
@@ -106,8 +135,8 @@ export default function MenuAdmin() {
   };
 
   // Generate share URLs with current config
-  const guestUrl = generateShareURL(menu, '');
-  const kitchenUrl = generateShareURL(menu, 'chef');
+  const guestUrl = generateShareURL(menu, '', resortConfig, resortId);
+  const kitchenUrl = generateShareURL(menu, 'chef', resortConfig, resortId);
 
   const handleCopy = (url, label) => {
     navigator.clipboard.writeText(url).then(() => {

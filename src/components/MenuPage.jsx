@@ -1,9 +1,8 @@
 import { useApp } from '../context/AppContext';
-import { menuCategories, icons } from '../config/menu';
 import styles from './MenuPage.module.css';
 
-function CategoryIcon({ iconName }) {
-  const svgString = icons[iconName];
+function CategoryIcon({ iconName, icons }) {
+  const svgString = icons?.[iconName];
   if (!svgString) return null;
 
   return (
@@ -15,7 +14,9 @@ function CategoryIcon({ iconName }) {
 }
 
 export default function MenuPage() {
-  const { t, language, goToStep, setSelectedCategory } = useApp();
+  const { t, language, goToStep, setSelectedCategory, resortConfig } = useApp();
+  const menuCategories = resortConfig.menu.menuCategories;
+  const icons = resortConfig.menu.icons;
 
   const handleCategorySelect = (categoryId) => {
     if (categoryId === 'build-your-own') {
@@ -52,7 +53,7 @@ export default function MenuPage() {
               onClick={() => handleCategorySelect(category.id)}
               style={{ animationDelay: `${index * 0.05}s` }}
             >
-              <CategoryIcon iconName={category.icon} />
+              <CategoryIcon iconName={category.icon} icons={icons} />
               <div className={styles.categoryContent}>
                 <h2 className={styles.categoryName}>
                   {category.name[language]}
