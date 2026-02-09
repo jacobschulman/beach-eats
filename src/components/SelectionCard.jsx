@@ -1,8 +1,8 @@
-import { icons, dietaryFlags } from '../config/menu';
+import { useApp } from '../context/AppContext';
 import styles from './SelectionCard.module.css';
 
-function MenuIcon({ iconName }) {
-  const svgString = icons[iconName];
+function MenuIcon({ iconName, icons }) {
+  const svgString = icons?.[iconName];
   if (!svgString) return null;
 
   return (
@@ -13,7 +13,7 @@ function MenuIcon({ iconName }) {
   );
 }
 
-function DietaryBadges({ dietary = [], language = 'en' }) {
+function DietaryBadges({ dietary = [], language = 'en', dietaryFlags }) {
   if (!dietary || dietary.length === 0) return null;
 
   return (
@@ -42,18 +42,22 @@ export default function SelectionCard({
   language = 'en',
   price,
 }) {
+  const { resortConfig } = useApp();
+  const icons = resortConfig.menu.icons;
+  const dietaryFlags = resortConfig.menu.dietaryFlags;
+
   return (
     <button
       className={`${styles.card} ${selected ? styles.selected : ''} ${styles[variant]}`}
       onClick={onClick}
       type="button"
     >
-      {icon && <MenuIcon iconName={icon} />}
+      {icon && <MenuIcon iconName={icon} icons={icons} />}
       <div className={styles.content}>
         <div className={styles.header}>
           <h3 className={styles.name}>{name}</h3>
           {price && <span className={styles.price}>{price}</span>}
-          <DietaryBadges dietary={dietary} language={language} />
+          <DietaryBadges dietary={dietary} language={language} dietaryFlags={dietaryFlags} />
         </div>
         {description && <p className={styles.description}>{description}</p>}
       </div>

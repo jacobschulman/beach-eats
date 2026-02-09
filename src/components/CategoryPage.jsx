@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { menuCategories, icons, dietaryFlags } from '../config/menu';
 import { useMenu } from '../hooks/useMenu';
 import styles from './CategoryPage.module.css';
 
@@ -12,8 +11,8 @@ const getLocalizedName = (name, language) => {
   return '';
 };
 
-function MenuIcon({ iconName }) {
-  const svgString = icons[iconName];
+function MenuIcon({ iconName, icons }) {
+  const svgString = icons?.[iconName];
   if (!svgString) return null;
 
   return (
@@ -24,7 +23,7 @@ function MenuIcon({ iconName }) {
   );
 }
 
-function DietaryBadges({ dietary = [], language = 'en' }) {
+function DietaryBadges({ dietary = [], language = 'en', dietaryFlags }) {
   if (!dietary || dietary.length === 0) return null;
 
   return (
@@ -42,7 +41,7 @@ function DietaryBadges({ dietary = [], language = 'en' }) {
   );
 }
 
-function ItemCard({ item, language, t, onAddToOrder, availableExclusions }) {
+function ItemCard({ item, language, t, onAddToOrder, availableExclusions, icons, dietaryFlags }) {
   const [expanded, setExpanded] = useState(false);
   const [selectedExclusions, setSelectedExclusions] = useState([]);
   const [quantity, setQuantity] = useState(1);
@@ -84,11 +83,11 @@ function ItemCard({ item, language, t, onAddToOrder, availableExclusions }) {
         className={styles.itemHeader}
         onClick={handleCardClick}
       >
-        <MenuIcon iconName={item.icon} />
+        <MenuIcon iconName={item.icon} icons={icons} />
         <div className={styles.itemContent}>
           <div className={styles.itemTitleRow}>
             <h3 className={styles.itemName}>{item.name[language]}</h3>
-            <DietaryBadges dietary={item.dietary} language={language} />
+            <DietaryBadges dietary={item.dietary} language={language} dietaryFlags={dietaryFlags} />
           </div>
           <p className={styles.itemDescription}>
             {item.description[language]}
@@ -159,8 +158,11 @@ function ItemCard({ item, language, t, onAddToOrder, availableExclusions }) {
 }
 
 export default function CategoryPage() {
-  const { t, language, selectedCategory, goToStep, addMenuItemToOrder } = useApp();
+  const { t, language, selectedCategory, goToStep, addMenuItemToOrder, resortConfig } = useApp();
   const { getAvailableMenuItems, availableExclusions } = useMenu();
+  const menuCategories = resortConfig.menu.menuCategories;
+  const icons = resortConfig.menu.icons;
+  const dietaryFlags = resortConfig.menu.dietaryFlags;
 
   const category = menuCategories.find((c) => c.id === selectedCategory);
   const items = getAvailableMenuItems(selectedCategory);
@@ -207,6 +209,8 @@ export default function CategoryPage() {
               t={t}
               onAddToOrder={handleAddToOrder}
               availableExclusions={availableExclusions}
+              icons={icons}
+              dietaryFlags={dietaryFlags}
               style={{ animationDelay: `${index * 0.05}s` }}
             />
           ))}
