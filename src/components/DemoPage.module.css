@@ -83,7 +83,7 @@
 
 .cardsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   margin-bottom: 48px;
 }
@@ -432,5 +432,20 @@
 
   .intro h2 {
     font-size: 26px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .qrCode {
+    width: 120px;
+    height: 120px;
   }
 }

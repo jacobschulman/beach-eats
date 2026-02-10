@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { generateShareURL } from '../hooks/useMenu';
+import { saveMenuConfig } from '../services/menuService';
 import styles from './MenuAdmin.module.css';
 
 // Generate QR code URL
@@ -33,7 +34,7 @@ function initializeMenuItems(menuItems) {
   return result;
 }
 
-function getDefaultMenu(resortConfig) {
+function getLocalDefaultMenu(resortConfig) {
   const menuConfig = resortConfig.menu;
   return {
     proteins: initializeWithPrices(menuConfig.proteins),
@@ -42,6 +43,14 @@ function getDefaultMenu(resortConfig) {
     exclusions: initializeWithPrices(menuConfig.exclusions),
     menuItems: initializeMenuItems(menuConfig.menuItems),
   };
+}
+
+function getDefaultSectionActive(resortConfig) {
+  const active = {};
+  resortConfig.menu.menuCategories.forEach(cat => {
+    active[cat.id] = cat.id !== 'build-your-own';
+  });
+  return active;
 }
 
 function mergeItems(defaults, stored) {
@@ -63,23 +72,25 @@ function mergeMenuItems(defaults, stored) {
 
 function getStoredMenu(resortConfig, resortId) {
   const storageKey = getStorageKey(resortId);
+  const defaultSectionActive = getDefaultSectionActive(resortConfig);
   try {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
       const parsed = JSON.parse(stored);
-      const defaults = getDefaultMenu(resortConfig);
+      const defaults = getLocalDefaultMenu(resortConfig);
       return {
         proteins: mergeItems(defaults.proteins, parsed.proteins),
         formats: mergeItems(defaults.formats, parsed.formats),
         addons: mergeItems(defaults.addons, parsed.addons),
         exclusions: mergeItems(defaults.exclusions, parsed.exclusions),
         menuItems: mergeMenuItems(defaults.menuItems, parsed.menuItems),
+        sectionActive: { ...defaultSectionActive, ...(parsed.sectionActive || {}) },
       };
     }
   } catch {
     // Fall through to defaults
   }
-  return getDefaultMenu(resortConfig);
+  return { ...getLocalDefaultMenu(resortConfig), sectionActive: defaultSectionActive };
 }
 
 // Dietary badge display
@@ -262,6 +273,7 @@ export default function MenuAdmin() {
 
   const saveMenu = (menuData) => {
     localStorage.setItem(storageKey, JSON.stringify(menuData));
+    saveMenuConfig(resortId, menuData);
   };
 
   const handleSave = () => {
@@ -273,7 +285,7 @@ export default function MenuAdmin() {
 
   const handleReset = () => {
     if (confirm('Reset all menu items to defaults? This cannot be undone.')) {
-      const defaultMenu = getDefaultMenu(resortConfig);
+      const defaultMenu = { ...getLocalDefaultMenu(resortConfig), sectionActive: getDefaultSectionActive(resortConfig) };
       setMenu(defaultMenu);
       saveMenu(defaultMenu);
       setDirty(false);
@@ -337,6 +349,17 @@ export default function MenuAdmin() {
       setCopied(label);
       setTimeout(() => setCopied(''), 2000);
     });
+  };
+
+  const toggleSectionActive = (sectionId) => {
+    setDirty(true);
+    setMenu(prev => ({
+      ...prev,
+      sectionActive: {
+        ...prev.sectionActive,
+        [sectionId]: !prev.sectionActive?.[sectionId],
+      },
+    }));
   };
 
   const addSection = () => {
@@ -431,6 +454,24 @@ export default function MenuAdmin() {
       </nav>
 
       <main className={styles.content}>
+        {/* Section active toggle */}
+        <div className={styles.sectionToggleBar}>
+          <span className={styles.sectionToggleLabel}>
+            {tabs.find(t => t.id === activeTab)?.label}
+          </span>
+          <label className={styles.sectionActiveToggle}>
+            <span className={styles.sectionActiveText}>
+              {menu.sectionActive?.[activeTab] !== false ? 'Visible to guests' : 'Hidden from guests'}
+            </span>
+            <input
+              type="checkbox"
+              checked={menu.sectionActive?.[activeTab] !== false}
+              onChange={() => toggleSectionActive(activeTab)}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+
         {activeTab === 'build-your-own' && (
           <div className={styles.byoContent}>
             {byoGroups.map(group => (

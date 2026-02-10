@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { serviceConfig } from '../config/service';
+import { subscribeToMenuConfig } from '../services/menuService';
 
 const CONFIG_PARAM = 'config';
 
@@ -24,7 +25,15 @@ function initializeMenuItems(menuItems) {
   return result;
 }
 
-function getDefaultMenu(resortConfig) {
+function getDefaultSectionActive(resortConfig) {
+  const active = {};
+  resortConfig.menu.menuCategories.forEach(cat => {
+    active[cat.id] = cat.id !== 'build-your-own';
+  });
+  return active;
+}
+
+export function getDefaultMenu(resortConfig) {
   const menuConfig = resortConfig.menu;
   return {
     proteins: initializeWithPrices(menuConfig.proteins),
@@ -32,6 +41,7 @@ function getDefaultMenu(resortConfig) {
     addons: initializeWithPrices(menuConfig.addons),
     exclusions: initializeWithPrices(menuConfig.exclusions),
     menuItems: initializeMenuItems(menuConfig.menuItems),
+    sectionActive: getDefaultSectionActive(resortConfig),
   };
 }
 
@@ -72,6 +82,19 @@ function compressConfig(menu, resortConfig) {
     changes.m = menuChanges;
   }
 
+  // Track section active changes
+  if (menu.sectionActive) {
+    const saChanges = {};
+    Object.entries(menu.sectionActive).forEach(([id, active]) => {
+      if (defaults.sectionActive[id] !== undefined && active !== defaults.sectionActive[id]) {
+        saChanges[id] = active ? 1 : 0;
+      }
+    });
+    if (Object.keys(saChanges).length > 0) {
+      changes.sa = saChanges;
+    }
+  }
+
   return changes;
 }
 
@@ -101,6 +124,14 @@ function applyCompressedConfig(compressed, resortConfig) {
           }
           return item;
         });
+      }
+    });
+  }
+
+  if (compressed.sa) {
+    Object.entries(compressed.sa).forEach(([id, active]) => {
+      if (menu.sectionActive[id] !== undefined) {
+        menu.sectionActive[id] = active === 1;
       }
     });
   }
@@ -141,7 +172,6 @@ function getURLConfig(resortConfig, storageKey) {
     if (encoded) {
       const config = decodeConfig(encoded, resortConfig);
       if (config) {
-        // Also save to localStorage so it persists
         localStorage.setItem(storageKey, JSON.stringify(config));
         return config;
       }
@@ -150,6 +180,50 @@ function getURLConfig(resortConfig, storageKey) {
     // Fall through
   }
   return null;
+}
+
+function mergeItems(defaults, stored) {
+  if (!stored) return defaults;
+  // Start with stored items matched by id, then add any new defaults
+  const result = defaults.map(defaultItem => {
+    const storedItem = stored.find(s => s.id === defaultItem.id);
+    return storedItem ? { ...defaultItem, ...storedItem } : defaultItem;
+  });
+  // Also include custom items from stored that aren't in defaults
+  stored.forEach(storedItem => {
+    if (!defaults.find(d => d.id === storedItem.id)) {
+      result.push(storedItem);
+    }
+  });
+  return result;
+}
+
+function mergeMenuItems(defaults, stored) {
+  if (!stored) return defaults;
+  const result = {};
+  // Merge default categories
+  Object.keys(defaults).forEach(category => {
+    result[category] = mergeItems(defaults[category], stored[category]);
+  });
+  // Include custom categories from stored
+  Object.keys(stored).forEach(category => {
+    if (!defaults[category]) {
+      result[category] = stored[category];
+    }
+  });
+  return result;
+}
+
+function mergeStoredMenu(resortConfig, stored) {
+  const defaults = getDefaultMenu(resortConfig);
+  return {
+    proteins: mergeItems(defaults.proteins, stored.proteins),
+    formats: mergeItems(defaults.formats, stored.formats),
+    addons: mergeItems(defaults.addons, stored.addons),
+    exclusions: mergeItems(defaults.exclusions, stored.exclusions),
+    menuItems: mergeMenuItems(defaults.menuItems, stored.menuItems),
+    sectionActive: { ...defaults.sectionActive, ...(stored.sectionActive || {}) },
+  };
 }
 
 function getStoredMenu(resortConfig, resortId) {
@@ -162,16 +236,7 @@ function getStoredMenu(resortConfig, resortId) {
   try {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
-      const parsed = JSON.parse(stored);
-      // Merge with defaults to ensure new items are included
-      const defaults = getDefaultMenu(resortConfig);
-      return {
-        proteins: mergeItems(defaults.proteins, parsed.proteins),
-        formats: mergeItems(defaults.formats, parsed.formats),
-        addons: mergeItems(defaults.addons, parsed.addons),
-        exclusions: mergeItems(defaults.exclusions, parsed.exclusions),
-        menuItems: mergeMenuItems(defaults.menuItems, parsed.menuItems),
-      };
+      return mergeStoredMenu(resortConfig, JSON.parse(stored));
     }
   } catch {
     // Fall through to defaults
@@ -179,29 +244,11 @@ function getStoredMenu(resortConfig, resortId) {
   return getDefaultMenu(resortConfig);
 }
 
-function mergeItems(defaults, stored) {
-  if (!stored) return defaults;
-  return defaults.map(defaultItem => {
-    const storedItem = stored.find(s => s.id === defaultItem.id);
-    return storedItem ? { ...defaultItem, ...storedItem } : defaultItem;
-  });
-}
-
-function mergeMenuItems(defaults, stored) {
-  if (!stored) return defaults;
-  const result = {};
-  Object.keys(defaults).forEach(category => {
-    result[category] = mergeItems(defaults[category], stored[category]);
-  });
-  return result;
-}
-
 // Generate shareable URL with current config
 export function generateShareURL(menu, mode = '', resortConfig, resortId) {
   const encoded = encodeConfig(menu, resortConfig);
   const baseUrl = serviceConfig.getBaseUrl();
 
-  // NEW path-based URLs
   let url = `${baseUrl}/resorts/${resortId}`;
 
   if (mode === 'admin' || mode === 'menu') {
@@ -209,7 +256,6 @@ export function generateShareURL(menu, mode = '', resortConfig, resortId) {
   } else if (mode === 'chef' || mode === 'kitchen') {
     url += '/kitchen';
   }
-  // else: default ordering page (no suffix needed, already at /resorts/:resortKey)
 
   if (encoded) {
     url += `?${CONFIG_PARAM}=${encoded}`;
@@ -221,27 +267,18 @@ export function generateShareURL(menu, mode = '', resortConfig, resortId) {
 export function useMenu() {
   const { resortConfig, resortId } = useApp();
   const [menu, setMenu] = useState(() => getStoredMenu(resortConfig, resortId));
-  const storageKey = `beach-eats-menu-${resortId}`;
 
-  // Listen for storage changes (when admin saves)
+  // Subscribe to Firestore real-time updates (falls back to localStorage polling)
   useEffect(() => {
-    const handleStorage = (e) => {
-      if (e.key === storageKey) {
-        setMenu(getStoredMenu(resortConfig, resortId));
+    const unsubscribe = subscribeToMenuConfig(resortId, (firestoreMenu) => {
+      if (firestoreMenu) {
+        const merged = mergeStoredMenu(resortConfig, firestoreMenu);
+        setMenu(merged);
       }
-    };
+    });
 
-    // Also poll for changes (same-tab updates)
-    const interval = setInterval(() => {
-      setMenu(getStoredMenu(resortConfig, resortId));
-    }, 2000);
-
-    window.addEventListener('storage', handleStorage);
-    return () => {
-      window.removeEventListener('storage', handleStorage);
-      clearInterval(interval);
-    };
-  }, [resortId, resortConfig, storageKey]);
+    return unsubscribe;
+  }, [resortId, resortConfig]);
 
   // Get available items only
   const getAvailable = useCallback((items) => {
@@ -254,18 +291,26 @@ export function useMenu() {
     return `+$${price.toFixed(price % 1 === 0 ? 0 : 2)}`;
   }, []);
 
+  // Check if a section is active
+  const isSectionActive = useCallback((sectionId) => {
+    if (!menu.sectionActive) return true;
+    return menu.sectionActive[sectionId] !== false;
+  }, [menu.sectionActive]);
+
   return {
-    menu, // expose full menu for sharing
+    menu,
     proteins: menu.proteins,
     formats: menu.formats,
     addons: menu.addons,
     exclusions: menu.exclusions,
     menuItems: menu.menuItems,
+    sectionActive: menu.sectionActive || {},
     availableProteins: getAvailable(menu.proteins),
     availableFormats: getAvailable(menu.formats),
     availableAddons: getAvailable(menu.addons),
     availableExclusions: getAvailable(menu.exclusions),
     getAvailableMenuItems: (category) => getAvailable(menu.menuItems[category] || []),
+    isSectionActive,
     formatPrice,
   };
 }

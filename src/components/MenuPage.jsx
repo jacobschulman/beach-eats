@@ -1,4 +1,5 @@
 import { useApp } from '../context/AppContext';
+import { useMenu } from '../hooks/useMenu';
 import styles from './MenuPage.module.css';
 
 function CategoryIcon({ iconName, icons }) {
@@ -15,7 +16,8 @@ function CategoryIcon({ iconName, icons }) {
 
 export default function MenuPage() {
   const { t, language, goToStep, setSelectedCategory, resortConfig } = useApp();
-  const menuCategories = resortConfig.menu.menuCategories;
+  const { isSectionActive } = useMenu();
+  const menuCategories = resortConfig.menu.menuCategories.filter(cat => isSectionActive(cat.id));
   const icons = resortConfig.menu.icons;
 
   const handleCategorySelect = (categoryId) => {
