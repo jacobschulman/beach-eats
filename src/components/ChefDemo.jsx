@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { formatOrderItem } from '../config/menu';
 import { useApp } from '../context/AppContext';
-import { subscribeToOrders, updateOrderStatus, getDebugLog } from '../services/orderService';
-import { isFirebaseAvailable } from '../config/firebase';
+import { subscribeToOrders, updateOrderStatus } from '../services/orderService';
 import styles from './ChefDemo.module.css';
 
 // Kitchen display translations
@@ -258,47 +257,6 @@ export default function ChefDemo() {
         </p>
       </div>
 
-      {/* Debug panel — remove after fixing */}
-      <DebugPanel resortId={resortId} orderCount={orders.length} />
-    </div>
-  );
-}
-
-function DebugPanel({ resortId, orderCount }) {
-  const [log, setLog] = useState([]);
-  const [expanded, setExpanded] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => setLog(getDebugLog()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div
-      style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: '#1a1a1a', color: '#0f0', fontFamily: 'monospace',
-        fontSize: '11px', zIndex: 9999, borderTop: '2px solid #333',
-      }}
-    >
-      <div
-        onClick={() => setExpanded(!expanded)}
-        style={{ padding: '6px 12px', cursor: 'pointer', display: 'flex', gap: '16px' }}
-      >
-        <span>Firebase: {isFirebaseAvailable() ? '✓ connected' : '✗ NOT available'}</span>
-        <span>Resort: {resortId || 'none'}</span>
-        <span>Orders: {orderCount}</span>
-        <span style={{ marginLeft: 'auto' }}>{expanded ? '▼ hide' : '▲ debug log'}</span>
-      </div>
-      {expanded && (
-        <div style={{ padding: '8px 12px', maxHeight: '200px', overflow: 'auto', borderTop: '1px solid #333' }}>
-          {log.length === 0 ? (
-            <div style={{ color: '#666' }}>No log entries yet</div>
-          ) : (
-            log.map((entry, i) => <div key={i}>{entry}</div>)
-          )}
-        </div>
-      )}
     </div>
   );
 }

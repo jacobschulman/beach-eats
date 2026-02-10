@@ -115,6 +115,22 @@
   background: #1e293b;
 }
 
+.doneBtn {
+  padding: 8px 22px;
+  background: #22c55e;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.doneBtn:hover {
+  background: #16a34a;
+}
+
 .saveBtn.saved {
   background: #22c55e;
 }

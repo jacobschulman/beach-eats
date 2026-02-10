@@ -145,7 +145,7 @@ function ItemRow({ item, section, index, category, onUpdate, onToggleAvailable, 
   const description = item.description?.en ?? item.description ?? '';
 
   return (
-    <div className={`${styles.itemRow} ${!item.available ? styles.unavailable : ''}`}>
+    <div className={`${styles.itemRow} ${!item.available ? styles.unavailable : ''}`} data-item-id={item.id}>
       <div className={styles.itemReadRow}>
         <div className={styles.itemMain}>
           <div className={styles.itemNameRow}>
@@ -338,6 +338,11 @@ export default function MenuAdmin() {
       }
       return updated;
     });
+    // Scroll new item into view after render
+    setTimeout(() => {
+      const el = document.querySelector(`[data-item-id="${id}"]`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   };
 
   // Generate share URLs with current config
@@ -413,18 +418,6 @@ export default function MenuAdmin() {
           <span className={styles.subtitle}>{resortConfig.branding.name.en}</span>
         </div>
         <div className={styles.headerActions}>
-          <button onClick={() => {
-            if (dirty) {
-              const action = confirm('You have unsaved changes. Save before leaving?');
-              if (action) {
-                saveMenu(menu);
-                setDirty(false);
-              }
-            }
-            navigate(`/resorts/${resortId}/demo`);
-          }} className={styles.backBtn}>
-            Back to Demo
-          </button>
           <button onClick={() => setShowShareModal(true)} className={styles.shareBtn}>
             Share
           </button>
@@ -433,6 +426,12 @@ export default function MenuAdmin() {
           </button>
           <button onClick={handleSave} className={`${styles.saveBtn} ${saved ? styles.saved : ''}`}>
             {saved ? 'Saved' : 'Save'}
+          </button>
+          <button onClick={() => {
+            saveMenu(menu);
+            navigate(`/resorts/${resortId}/demo`);
+          }} className={styles.doneBtn}>
+            Done
           </button>
         </div>
       </header>

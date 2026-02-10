@@ -153,86 +153,30 @@ export default function DemoPage() {
             <p className={styles.resortTagline}>{resort.branding.tagline.en}</p>
           </div>
 
-          {/* Live Demo Toggles */}
-          <div className={styles.liveDemo}>
-            <div className={styles.liveDemoToggles}>
-              <button
-                className={`${styles.panelToggle} ${livePanels.ordering ? styles.panelToggleActive : ''}`}
-                onClick={() => setLivePanels(p => ({ ...p, ordering: !p.ordering }))}
-              >
-                Guest Ordering
-              </button>
-              <button
-                className={`${styles.panelToggle} ${livePanels.kitchen ? styles.panelToggleActive : ''}`}
-                onClick={() => setLivePanels(p => ({ ...p, kitchen: !p.kitchen }))}
-              >
-                Kitchen Display
-              </button>
-              <button
-                className={`${styles.panelToggle} ${livePanels.menu ? styles.panelToggleActive : ''}`}
-                onClick={() => setLivePanels(p => ({ ...p, menu: !p.menu }))}
-              >
-                Menu Manager
-              </button>
-            </div>
-
-            {(livePanels.ordering || livePanels.kitchen || livePanels.menu) && baseUrl && (
-              <>
-                <p className={styles.liveDemoHint}>
-                  {livePanels.ordering && livePanels.kitchen
-                    ? 'Place an order — watch it appear in the kitchen in real time.'
-                    : livePanels.ordering && livePanels.menu
-                    ? 'Edit the menu — see changes reflected in the guest ordering view.'
-                    : 'Toggle panels above to see how they work together.'}
-                </p>
-                <div
-                  className={styles.liveDemoFrames}
-                  data-panel-count={[livePanels.ordering, livePanels.kitchen, livePanels.menu].filter(Boolean).length}
-                >
-                  {livePanels.ordering && (
-                    <div className={styles.frameWrapper}>
-                      <p className={styles.frameLabel}>Guest Ordering</p>
-                      <iframe
-                        src={`${baseUrl}/resorts/${resortKey}`}
-                        className={styles.phoneFrame}
-                        title="Guest Ordering"
-                      />
-                    </div>
-                  )}
-                  {livePanels.kitchen && (
-                    <div className={styles.frameWrapper}>
-                      <p className={styles.frameLabel}>Kitchen Display</p>
-                      <iframe
-                        src={`${baseUrl}/resorts/${resortKey}/kitchen`}
-                        className={styles.phoneFrame}
-                        title="Kitchen Display"
-                      />
-                    </div>
-                  )}
-                  {livePanels.menu && (
-                    <div className={styles.frameWrapper}>
-                      <p className={styles.frameLabel}>Menu Manager</p>
-                      <iframe
-                        src={`${baseUrl}/resorts/${resortKey}/menu`}
-                        className={styles.phoneFrame}
-                        title="Menu Manager"
-                      />
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
           <div className={styles.cardsGrid}>
             {/* Guest Ordering */}
             <div className={styles.card} style={{ '--accent-color': '#c45d3a' }}>
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Guest Ordering</h3>
+                <button
+                  className={`${styles.previewBtn} ${livePanels.ordering ? styles.previewBtnActive : ''}`}
+                  onClick={() => setLivePanels(p => ({ ...p, ordering: !p.ordering }))}
+                >
+                  {livePanels.ordering ? 'Hide Preview' : 'Preview'}
+                </button>
               </div>
               <p className={styles.cardDesc}>
                 Mobile-friendly ordering experience. Bilingual support (EN/ES).
               </p>
+              {livePanels.ordering && baseUrl && (
+                <div className={styles.inlinePreview}>
+                  <iframe
+                    src={`${baseUrl}/resorts/${resortKey}`}
+                    className={styles.previewFrame}
+                    title="Guest Ordering Preview"
+                  />
+                </div>
+              )}
               <div className={styles.qrSection}>
                 {baseUrl && (
                   <img
@@ -249,7 +193,7 @@ export default function DemoPage() {
                 onClick={() => openLink(guestUrl)}
                 style={{ backgroundColor: '#c45d3a' }}
               >
-                Open Guest App
+                View in Fullscreen
               </button>
               <a href={guestUrl} className={styles.urlLink}>{guestUrl}</a>
             </div>
@@ -258,10 +202,25 @@ export default function DemoPage() {
             <div className={styles.card} style={{ '--accent-color': '#38a169' }}>
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Kitchen Display</h3>
+                <button
+                  className={`${styles.previewBtn} ${livePanels.kitchen ? styles.previewBtnActive : ''}`}
+                  onClick={() => setLivePanels(p => ({ ...p, kitchen: !p.kitchen }))}
+                >
+                  {livePanels.kitchen ? 'Hide Preview' : 'Preview'}
+                </button>
               </div>
               <p className={styles.cardDesc}>
                 Real-time order tracking for kitchen staff.
               </p>
+              {livePanels.kitchen && baseUrl && (
+                <div className={styles.inlinePreview}>
+                  <iframe
+                    src={`${baseUrl}/resorts/${resortKey}/kitchen`}
+                    className={styles.previewFrame}
+                    title="Kitchen Display Preview"
+                  />
+                </div>
+              )}
               <div className={styles.qrSection}>
                 {baseUrl && (
                   <img
@@ -278,7 +237,7 @@ export default function DemoPage() {
                 onClick={() => openLink(kitchenUrl)}
                 style={{ backgroundColor: '#38a169' }}
               >
-                Open Kitchen
+                View in Fullscreen
               </button>
               <a href={kitchenUrl} className={styles.urlLink}>{kitchenUrl}</a>
             </div>
@@ -287,10 +246,25 @@ export default function DemoPage() {
             <div className={styles.card} style={{ '--accent-color': '#3182ce' }}>
               <div className={styles.cardHeader}>
                 <h3 className={styles.cardTitle}>Menu Manager</h3>
+                <button
+                  className={`${styles.previewBtn} ${livePanels.menu ? styles.previewBtnActive : ''}`}
+                  onClick={() => setLivePanels(p => ({ ...p, menu: !p.menu }))}
+                >
+                  {livePanels.menu ? 'Hide Preview' : 'Preview'}
+                </button>
               </div>
               <p className={styles.cardDesc}>
                 Update items, prices, and availability in real-time.
               </p>
+              {livePanels.menu && baseUrl && (
+                <div className={styles.inlinePreview}>
+                  <iframe
+                    src={`${baseUrl}/resorts/${resortKey}/menu`}
+                    className={styles.previewFrame}
+                    title="Menu Manager Preview"
+                  />
+                </div>
+              )}
               <div className={styles.qrSection}>
                 {baseUrl && (
                   <img
@@ -307,7 +281,7 @@ export default function DemoPage() {
                 onClick={() => openLink(adminUrl)}
                 style={{ backgroundColor: '#3182ce' }}
               >
-                Open Admin
+                View in Fullscreen
               </button>
               <a href={adminUrl} className={styles.urlLink}>{adminUrl}</a>
             </div>
