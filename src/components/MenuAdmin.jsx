@@ -141,8 +141,8 @@ function ItemRow({ item, section, index, category, onUpdate, onToggleAvailable, 
     onUpdate(section, index, 'dietary', updated, category);
   };
 
-  const name = item.name?.en || item.name || '';
-  const description = item.description?.en || item.description || '';
+  const name = item.name?.en ?? item.name ?? '';
+  const description = item.description?.en ?? item.description ?? '';
 
   return (
     <div className={`${styles.itemRow} ${!item.available ? styles.unavailable : ''}`}>
