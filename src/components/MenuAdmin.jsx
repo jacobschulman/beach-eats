@@ -321,8 +321,8 @@ export default function MenuAdmin() {
     const id = `custom-${Date.now()}`;
     const newItem = {
       id,
-      name: '',
-      description: '',
+      name: { en: '', es: '' },
+      description: { en: '', es: '' },
       price: 0,
       available: true,
     };

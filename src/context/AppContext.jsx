@@ -254,16 +254,13 @@ function appReducer(state, action) {
       // Use resort-specific order prefix
       const orderPrefix = state.resortConfig.orderPrefix || 'OR';
       const orderNumber = `${orderPrefix}${timestamp.toString().slice(-6)}${random}`;
-      const completedOrder = {
-        ...state.order,
-        orderNumber,
-        placedAt: new Date().toISOString(),
-      };
+      const placedAt = new Date().toISOString();
       return {
         ...state,
         order: {
           ...state.order,
           orderNumber,
+          placedAt,
         },
       };
     }
