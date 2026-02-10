@@ -1,324 +1,933 @@
-/* MarketingHome — Premium editorial layout */
-/* Inspired by Rosewood & Auberge visual language */
+/* MarketingHome — Premium editorial layout with parallax */
+/* Large serif typography, scroll-triggered animations, TrumpRX-inspired */
+
+/* ——— Page ——— */
 
 .page {
   min-height: 100vh;
   background-color: #FDFBF8;
   font-family: var(--font-body);
   color: #2d2d2d;
+  overflow-x: hidden;
+}
+
+/* ——— Scroll Animation Base ——— */
+
+.heroSub,
+.heroCta,
+.sectionEyebrowLight,
+.sectionHeadline,
+.platformHeadline,
+.platformSub,
+.pillar,
+.platformCard,
+.ctaInner {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pillar:nth-child(1) { transition-delay: 0s; }
+.pillar:nth-child(3) { transition-delay: 0.15s; }
+.pillar:nth-child(5) { transition-delay: 0.3s; }
+
+.platformCard:nth-child(1) { transition-delay: 0s; }
+.platformCard:nth-child(2) { transition-delay: 0.15s; }
+.platformCard:nth-child(3) { transition-delay: 0.3s; }
+
+.heroSub { transition-delay: 0.2s; }
+.heroCta { transition-delay: 0.4s; }
+
+.sectionEyebrowLight { transition-delay: 0s; }
+.sectionHeadline { transition-delay: 0.12s; }
+.platformHeadline { transition-delay: 0.12s; }
+.platformSub { transition-delay: 0.24s; }
+
+.visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
 }
 
 /* ——— Header ——— */
 
 .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 28px 40px;
-  background: #FDFBF8;
+  padding: 24px 48px;
+  background: transparent;
+  transition: background 0.4s ease, box-shadow 0.4s ease, padding 0.4s ease;
+}
+
+.headerScrolled {
+  background: rgba(253, 251, 248, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 
 .brandName {
   font-family: var(--font-heading);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 400;
   color: #2d2d2d;
   letter-spacing: -0.02em;
   margin: 0;
 }
 
-.headerLink {
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+.headerCta {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #8b7355;
+  color: #2d2d2d;
   background: none;
-  border: none;
+  border: 1.5px solid rgba(45, 45, 45, 0.3);
+  border-radius: 0;
+  padding: 10px 24px;
   cursor: pointer;
-  padding: 8px 0;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.3s ease, color 0.3s ease;
+  transition: all 0.3s ease;
   font-family: var(--font-body);
 }
 
-.headerLink:hover {
-  border-bottom-color: #8b7355;
-  color: #2d2d2d;
+.headerCta:hover {
+  background: #2d2d2d;
+  color: #fff;
+  border-color: #2d2d2d;
 }
 
 /* ——— Hero ——— */
 
 .hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 100px 40px 80px;
-  max-width: 820px;
-  margin: 0 auto;
+  padding: 140px 48px 120px;
+  background: linear-gradient(
+    180deg,
+    #FDFBF8 0%,
+    #F8F5F0 40%,
+    #F3EEE6 100%
+  );
+}
+
+.heroInner {
+  max-width: 900px;
+  position: relative;
+  z-index: 2;
 }
 
 .heroHeadline {
   font-family: var(--font-heading);
-  font-size: 56px;
+  font-size: clamp(42px, 7vw, 86px);
   font-weight: 400;
-  line-height: 1.12;
+  line-height: 1.06;
   color: #2d2d2d;
-  margin: 0 0 28px 0;
-  letter-spacing: -0.02em;
+  margin: 0 0 36px;
+  letter-spacing: -0.03em;
+  will-change: transform;
+}
+
+.heroHeadline em {
+  font-style: italic;
+  color: #8b7355;
 }
 
 .heroSub {
   font-size: 18px;
-  line-height: 1.7;
+  line-height: 1.75;
   color: #666;
-  max-width: 580px;
-  margin: 0 auto 44px;
+  max-width: 520px;
+  margin: 0 auto 48px;
   font-weight: 400;
 }
 
 .heroCta {
   display: inline-block;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #fff;
   background: #2d2d2d;
   border: none;
-  padding: 18px 44px;
+  padding: 20px 56px;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   font-family: var(--font-body);
 }
 
 .heroCta:hover {
   background: #1a1a1a;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* ——— Section Divider ——— */
-
-.divider {
-  width: 100%;
-  height: 1px;
-  background: #e8e4de;
-  border: none;
-  margin: 0;
+.heroFade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, #FDFBF8);
+  pointer-events: none;
+  z-index: 3;
 }
 
-/* ——— Pillars ——— */
+/* ——— Pillars Section ——— */
 
 .pillarsSection {
-  padding: 100px 40px;
-  max-width: 1100px;
+  padding: 140px 48px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.sectionLabel {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #8b7355;
-  text-align: center;
-  margin: 0 0 64px 0;
-}
-
-.pillarsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 64px;
-}
-
-.pillar {
-  text-align: left;
-}
-
-.pillarHeadline {
+.sectionHeadline {
   font-family: var(--font-heading);
-  font-size: 26px;
+  font-size: clamp(28px, 3.5vw, 42px);
   font-weight: 400;
   line-height: 1.25;
   color: #2d2d2d;
-  margin: 0 0 20px 0;
+  margin: 0 auto 100px;
+  letter-spacing: -0.02em;
+  text-align: center;
+  max-width: 750px;
+}
+
+.sectionHeadline em {
+  font-style: italic;
+  color: #8b7355;
+}
+
+.pillarsGrid {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+}
+
+.pillar {
+  flex: 1;
+  padding: 0 40px;
+}
+
+.pillarDivider {
+  width: 1px;
+  align-self: stretch;
+  background: #e0dbd4;
+  flex-shrink: 0;
+}
+
+.pillarTitle {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.25;
+  color: #2d2d2d;
+  margin: 0 0 18px;
   letter-spacing: -0.01em;
 }
 
 .pillarBody {
   font-size: 15px;
-  line-height: 1.75;
-  color: #666;
+  line-height: 1.8;
+  color: #777;
   margin: 0;
 }
 
-/* ——— Product Overview ——— */
+/* ——— Platform Section (dark) ——— */
 
-.productSection {
-  background: #fff;
-  padding: 100px 40px;
+.platformSection {
+  background: #1c1c1e;
+  padding: 140px 48px;
+  position: relative;
+  overflow: hidden;
 }
 
-.productInner {
-  max-width: 1100px;
+.platformSection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(139, 115, 85, 0.06) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.platformInner {
+  max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  text-align: center;
 }
 
-.productsGrid {
+.sectionEyebrowLight {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin: 0 0 24px;
+}
+
+.platformHeadline {
+  font-family: var(--font-heading);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: #f5f2ed;
+  margin: 0 0 20px;
+  letter-spacing: -0.02em;
+}
+
+.platformSub {
+  font-size: 17px;
+  line-height: 1.7;
+  color: rgba(245, 242, 237, 0.6);
+  max-width: 540px;
+  margin: 0 auto 80px;
+  font-weight: 400;
+}
+
+.platformGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 48px;
+  gap: 32px;
 }
 
-.productCard {
+.platformCard {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 36px 32px 40px;
   text-align: left;
-  padding: 40px 0;
-  border-top: 2px solid #e8e4de;
-  transition: border-color 0.4s ease;
+  position: relative;
+  transition: background 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+  will-change: transform;
 }
 
-.productCard:hover {
-  border-top-color: #c45d3a;
+.platformCard:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(139, 115, 85, 0.3);
 }
 
-.productTitle {
+/* ——— Phone Mockup ——— */
+
+.phoneMockup {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto 28px;
+  background: #f5f2ed;
+  border-radius: 20px;
+  padding: 8px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.phoneScreen {
+  background: #FDFBF8;
+  border-radius: 14px;
+  padding: 20px 14px 16px;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.phoneNotch {
+  width: 60px;
+  height: 4px;
+  background: #d4cfc8;
+  border-radius: 4px;
+  margin: 0 auto 16px;
+}
+
+/* Mockup: Guest Ordering */
+.mockupOrdering .mockupHeader {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  color: #2d2d2d;
+  text-align: center;
+  margin-bottom: 14px;
+  font-weight: 400;
+}
+
+.mockupItem {
+  background: #fff;
+  border: 1px solid #e8e4de;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.mockupItemImage {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #e8e4de 0%, #d4cfc8 100%);
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.mockupItemText {
+  flex: 1;
+}
+
+.mockupItemName {
+  font-size: 10px;
+  font-weight: 500;
+  color: #2d2d2d;
+  margin-bottom: 2px;
+}
+
+.mockupItemPrice {
+  font-size: 9px;
+  color: #8b7355;
+}
+
+.mockupBtn {
+  background: #2d2d2d;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-top: auto;
+}
+
+/* Mockup: Kitchen Display */
+.mockupKitchen .mockupHeader {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 12px;
+}
+
+.mockupTicket {
+  background: #fff;
+  border-left: 3px solid #8b7355;
+  border-radius: 0 6px 6px 0;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
+
+.mockupTicketNew {
+  border-left-color: #6B8E6B;
+}
+
+.mockupTicketHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.mockupTicketId {
+  font-size: 9px;
+  font-weight: 600;
+  color: #2d2d2d;
+}
+
+.mockupTicketTime {
+  font-size: 8px;
+  color: #999;
+}
+
+.mockupTicketItems {
+  font-size: 8px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Mockup: Menu Manager */
+.mockupAdmin .mockupHeader {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 12px;
+}
+
+.mockupMenuRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e8e4de;
+}
+
+.mockupMenuRow:last-child {
+  border-bottom: none;
+}
+
+.mockupMenuName {
+  font-size: 10px;
+  color: #2d2d2d;
+  font-weight: 400;
+}
+
+.mockupToggle {
+  width: 28px;
+  height: 16px;
+  background: #6B8E6B;
+  border-radius: 8px;
+  position: relative;
+}
+
+.mockupToggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.mockupToggleOff {
+  background: #d4cfc8;
+}
+
+.mockupToggleOff::after {
+  right: auto;
+  left: 2px;
+}
+
+.mockupMenuPrice {
+  font-size: 9px;
+  color: #8b7355;
+  margin-right: 8px;
+}
+
+.mockupMenuRight {
+  display: flex;
+  align-items: center;
+}
+
+/* ——— Mockup Micro-Animations ——— */
+
+/* Guest Ordering: periodic item tap + cart button pulse */
+.mockupOrdering .mockupItem:first-child {
+  animation: itemTap 5.5s ease-in-out 2s infinite;
+}
+
+@keyframes itemTap {
+  0%, 100% { background: #fff; }
+  10%, 16% { background: rgba(139, 115, 85, 0.08); box-shadow: inset 0 0 0 1px rgba(139, 115, 85, 0.12); }
+}
+
+.mockupOrdering .mockupBtn {
+  animation: btnPulse 5.5s ease-in-out 2.6s infinite;
+}
+
+@keyframes btnPulse {
+  0%, 100% { transform: scale(1); box-shadow: none; }
+  8%, 14% { transform: scale(1.04); box-shadow: 0 2px 8px rgba(45, 45, 45, 0.2); }
+}
+
+/* Kitchen Display: new ticket slides in + green glow */
+.mockupTicketNew {
+  animation: ticketArrive 7s ease-out 3s infinite;
+}
+
+@keyframes ticketArrive {
+  0%, 100% { transform: translateX(0); opacity: 1; box-shadow: none; }
+  6% { transform: translateX(110%); opacity: 0; box-shadow: none; }
+  14% { transform: translateX(110%); opacity: 0; box-shadow: none; }
+  24% { transform: translateX(0); opacity: 1; box-shadow: none; }
+  30% { box-shadow: 0 0 10px rgba(107, 142, 107, 0.35); }
+  42% { box-shadow: none; }
+}
+
+/* Menu Manager: Churros toggle switches on then off */
+.mockupToggleOff {
+  animation: toggleBg 8s ease-in-out 4s infinite;
+}
+
+.mockupToggleOff::after {
+  animation: toggleKnob 8s ease-in-out 4s infinite;
+}
+
+@keyframes toggleBg {
+  0%, 100% { background: #d4cfc8; }
+  12%, 30% { background: #6B8E6B; }
+}
+
+@keyframes toggleKnob {
+  0%, 100% { transform: translateX(0); }
+  12%, 30% { transform: translateX(12px); }
+}
+
+/* ——— Card content (below mockup) ——— */
+
+.cardAccent {
+  display: block;
+  width: 32px;
+  height: 2px;
+  background: #8b7355;
+  margin-bottom: 20px;
+}
+
+.cardTitle {
   font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 400;
-  color: #2d2d2d;
-  margin: 0 0 16px 0;
+  color: #f5f2ed;
+  margin: 0 0 12px;
   letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
-.productBody {
+.cardBody {
   font-size: 15px;
-  line-height: 1.75;
-  color: #666;
+  line-height: 1.8;
+  color: rgba(245, 242, 237, 0.55);
   margin: 0;
 }
 
-/* ——— CTA ——— */
+/* ——— CTA Section ——— */
 
 .ctaSection {
+  padding: 160px 48px;
   text-align: center;
-  padding: 100px 40px;
+  background: #FDFBF8;
+  position: relative;
+}
+
+.ctaInner {
   max-width: 600px;
   margin: 0 auto;
 }
 
 .ctaHeadline {
   font-family: var(--font-heading);
-  font-size: 36px;
+  font-size: clamp(32px, 4vw, 48px);
   font-weight: 400;
   color: #2d2d2d;
-  margin: 0 0 36px 0;
+  margin: 0 0 36px;
   letter-spacing: -0.02em;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .ctaPrimary {
   display: inline-block;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #fff;
-  background: #c45d3a;
+  background: #8b7355;
   border: none;
-  padding: 18px 44px;
+  padding: 20px 56px;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
   font-family: var(--font-body);
 }
 
 .ctaPrimary:hover {
-  background: #a84e31;
-  transform: translateY(-1px);
+  background: #7a6349;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(139, 115, 85, 0.25);
 }
 
 /* ——— Footer ——— */
 
 .footer {
   text-align: center;
-  padding: 40px;
+  padding: 48px 48px;
   border-top: 1px solid #e8e4de;
 }
 
-.footerText {
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #8b7355;
-  margin: 0;
-  font-weight: 500;
+.footerBrand {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 400;
+  color: #2d2d2d;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
 }
 
+.footerNote {
+  font-size: 13px;
+  color: #999;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ================================================ */
 /* ——— Responsive ——— */
+/* ================================================ */
 
-@media (max-width: 900px) {
-  .pillarsGrid {
-    grid-template-columns: 1fr;
-    gap: 56px;
+@media (max-width: 1024px) {
+  .header {
+    padding: 20px 32px;
   }
 
-  .productsGrid {
-    grid-template-columns: 1fr;
-    gap: 0;
+  .headerScrolled {
+    padding-top: 14px;
+    padding-bottom: 14px;
   }
 
-  .productCard {
-    padding: 32px 0;
+  .hero {
+    padding: 120px 32px 100px;
+  }
+
+  .pillarsSection {
+    padding: 100px 32px;
+  }
+
+  .sectionHeadline {
+    margin-bottom: 72px;
+  }
+
+  .pillar {
+    padding: 0 28px;
+  }
+
+  .platformSection {
+    padding: 100px 32px;
+  }
+
+  .platformGrid {
+    gap: 24px;
+  }
+
+  .platformCard {
+    padding: 32px 24px 36px;
+  }
+
+  .phoneMockup {
+    max-width: 180px;
+  }
+
+  .phoneScreen {
+    min-height: 260px;
+  }
+
+  .ctaSection {
+    padding: 120px 32px;
   }
 }
 
 @media (max-width: 768px) {
   .header {
-    padding: 20px 24px;
+    padding: 16px 24px;
+  }
+
+  .headerScrolled {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .brandName {
+    font-size: 20px;
+  }
+
+  .headerCta {
+    font-size: 11px;
+    padding: 8px 18px;
   }
 
   .hero {
-    padding: 64px 24px 56px;
-  }
-
-  .heroHeadline {
-    font-size: 36px;
+    min-height: 85vh;
+    padding: 100px 24px 80px;
   }
 
   .heroSub {
     font-size: 16px;
+    margin-bottom: 40px;
+  }
+
+  .heroCta {
+    padding: 18px 44px;
   }
 
   .pillarsSection {
-    padding: 64px 24px;
+    padding: 80px 24px;
   }
 
-  .sectionLabel {
-    margin-bottom: 48px;
+  .sectionHeadline {
+    margin-bottom: 56px;
   }
 
-  .pillarHeadline {
+  .pillarsGrid {
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .pillar {
+    padding: 0;
+  }
+
+  .pillarDivider {
+    width: 40px;
+    height: 1px;
+    align-self: center;
+  }
+
+  .pillar:nth-child(1) { transition-delay: 0s; }
+  .pillar:nth-child(3) { transition-delay: 0.1s; }
+  .pillar:nth-child(5) { transition-delay: 0.2s; }
+
+  .pillarTitle {
     font-size: 22px;
   }
 
-  .productSection {
-    padding: 64px 24px;
+  .platformSection {
+    padding: 80px 24px;
   }
+
+  .platformSub {
+    margin-bottom: 56px;
+  }
+
+  .platformGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .platformCard {
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .phoneMockup {
+    max-width: 140px;
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  .phoneScreen {
+    min-height: 220px;
+    padding: 16px 10px 12px;
+  }
+
+  .cardContent {
+    flex: 1;
+  }
+
+  .platformCard:nth-child(1) { transition-delay: 0s; }
+  .platformCard:nth-child(2) { transition-delay: 0.1s; }
+  .platformCard:nth-child(3) { transition-delay: 0.2s; }
 
   .ctaSection {
-    padding: 64px 24px;
+    padding: 80px 24px;
   }
 
-  .ctaHeadline {
-    font-size: 28px;
+  .footer {
+    padding: 36px 24px;
   }
 }
 
 @media (max-width: 480px) {
-  .heroHeadline {
-    font-size: 30px;
+  .hero {
+    min-height: 80vh;
+    padding: 90px 20px 60px;
+  }
+
+  .heroSub {
+    font-size: 15px;
+    line-height: 1.7;
   }
 
   .heroCta,
   .ctaPrimary {
     width: 100%;
     text-align: center;
+    padding: 18px 32px;
+  }
+
+  .pillarsSection {
+    padding: 64px 20px;
+  }
+
+  .pillarBody {
+    font-size: 14px;
+  }
+
+  .platformSection {
+    padding: 64px 20px;
+  }
+
+  /* Stack card back to vertical on small phones */
+  .platformCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .phoneMockup {
+    max-width: 160px;
+    margin: 0 auto 20px;
+  }
+
+  .cardBody {
+    font-size: 14px;
+  }
+
+  .ctaSection {
+    padding: 64px 20px;
+  }
+
+  .footer {
+    padding: 32px 20px;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .heroSub,
+  .heroCta,
+  .sectionEyebrowLight,
+  .sectionHeadline,
+  .platformHeadline,
+  .platformSub,
+  .pillar,
+  .platformCard,
+  .ctaInner {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .header {
+    transition: none;
+  }
+
+  .mockupOrdering .mockupItem:first-child,
+  .mockupOrdering .mockupBtn,
+  .mockupTicketNew,
+  .mockupToggleOff,
+  .mockupToggleOff::after {
+    animation: none;
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { isValidResortId } from '../config/resorts/index';
 import { getResortConfig } from '../config/resorts/index';
 import { serviceConfig } from '../config/service';
@@ -11,11 +12,12 @@ const getQRCodeUrl = (url, size = 200) => {
 };
 
 export default function DemoPage() {
+  const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [resortKey, setResortKey] = useState(null);
   const [error, setError] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
-  const [showLiveDemo, setShowLiveDemo] = useState(false);
+  const [livePanels, setLivePanels] = useState({ ordering: false, kitchen: false, menu: false });
 
   useEffect(() => {
     document.title = 'Beach Eats - Demo';
@@ -53,12 +55,12 @@ export default function DemoPage() {
       <div className={styles.demoPage}>
         <header className={styles.header}>
           <div className={styles.logoArea}>
-            <h1 className={styles.title}>Beach Eats</h1>
+            <h1 className={styles.title} onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>Beach Eats</h1>
           </div>
         </header>
         <main className={styles.content} style={{ maxWidth: '440px', paddingTop: '120px' }}>
           <div className={styles.intro}>
-            <h2>Enter Your Demo Code</h2>
+            <h2>Please enter your demo code</h2>
             <p>Your demo code was provided by the Beach Eats team.</p>
           </div>
           <form onSubmit={handleSubmit} style={{ width: '100%' }}>
@@ -123,7 +125,7 @@ export default function DemoPage() {
     <div className={styles.demoPage}>
       <header className={styles.header}>
         <div className={styles.logoArea}>
-          <h1 className={styles.title}>Beach Eats</h1>
+          <h1 className={styles.title} onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>Beach Eats</h1>
         </div>
         <button
           onClick={handleLogout}
@@ -151,39 +153,72 @@ export default function DemoPage() {
             <p className={styles.resortTagline}>{resort.branding.tagline.en}</p>
           </div>
 
-          {/* Live Demo Toggle */}
+          {/* Live Demo Toggles */}
           <div className={styles.liveDemo}>
-            <div className={styles.liveDemoToggle}>
+            <div className={styles.liveDemoToggles}>
               <button
-                className={`${styles.liveDemoBtn} ${showLiveDemo ? styles.liveDemoBtnActive : ''}`}
-                onClick={() => setShowLiveDemo(!showLiveDemo)}
+                className={`${styles.panelToggle} ${livePanels.ordering ? styles.panelToggleActive : ''}`}
+                onClick={() => setLivePanels(p => ({ ...p, ordering: !p.ordering }))}
               >
-                {showLiveDemo ? 'Hide Live Demo' : 'Try It Live'}
+                Guest Ordering
+              </button>
+              <button
+                className={`${styles.panelToggle} ${livePanels.kitchen ? styles.panelToggleActive : ''}`}
+                onClick={() => setLivePanels(p => ({ ...p, kitchen: !p.kitchen }))}
+              >
+                Kitchen Display
+              </button>
+              <button
+                className={`${styles.panelToggle} ${livePanels.menu ? styles.panelToggleActive : ''}`}
+                onClick={() => setLivePanels(p => ({ ...p, menu: !p.menu }))}
+              >
+                Menu Manager
               </button>
             </div>
 
-            {showLiveDemo && baseUrl && (
+            {(livePanels.ordering || livePanels.kitchen || livePanels.menu) && baseUrl && (
               <>
                 <p className={styles.liveDemoHint}>
-                  Place an order on the left — watch it appear in the kitchen on the right.
+                  {livePanels.ordering && livePanels.kitchen
+                    ? 'Place an order — watch it appear in the kitchen in real time.'
+                    : livePanels.ordering && livePanels.menu
+                    ? 'Edit the menu — see changes reflected in the guest ordering view.'
+                    : 'Toggle panels above to see how they work together.'}
                 </p>
-                <div className={styles.liveDemoFrames}>
-                  <div className={styles.frameWrapper}>
-                    <p className={styles.frameLabel}>Guest Ordering</p>
-                    <iframe
-                      src={`${baseUrl}/resorts/${resortKey}`}
-                      className={styles.phoneFrame}
-                      title="Guest Ordering"
-                    />
-                  </div>
-                  <div className={styles.frameWrapper}>
-                    <p className={styles.frameLabel}>Kitchen Display</p>
-                    <iframe
-                      src={`${baseUrl}/resorts/${resortKey}/kitchen`}
-                      className={styles.phoneFrame}
-                      title="Kitchen Display"
-                    />
-                  </div>
+                <div
+                  className={styles.liveDemoFrames}
+                  data-panel-count={[livePanels.ordering, livePanels.kitchen, livePanels.menu].filter(Boolean).length}
+                >
+                  {livePanels.ordering && (
+                    <div className={styles.frameWrapper}>
+                      <p className={styles.frameLabel}>Guest Ordering</p>
+                      <iframe
+                        src={`${baseUrl}/resorts/${resortKey}`}
+                        className={styles.phoneFrame}
+                        title="Guest Ordering"
+                      />
+                    </div>
+                  )}
+                  {livePanels.kitchen && (
+                    <div className={styles.frameWrapper}>
+                      <p className={styles.frameLabel}>Kitchen Display</p>
+                      <iframe
+                        src={`${baseUrl}/resorts/${resortKey}/kitchen`}
+                        className={styles.phoneFrame}
+                        title="Kitchen Display"
+                      />
+                    </div>
+                  )}
+                  {livePanels.menu && (
+                    <div className={styles.frameWrapper}>
+                      <p className={styles.frameLabel}>Menu Manager</p>
+                      <iframe
+                        src={`${baseUrl}/resorts/${resortKey}/menu`}
+                        className={styles.phoneFrame}
+                        title="Menu Manager"
+                      />
+                    </div>
+                  )}
                 </div>
               </>
             )}

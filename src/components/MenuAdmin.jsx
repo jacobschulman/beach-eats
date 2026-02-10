@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { generateShareURL } from '../hooks/useMenu';
 import styles from './MenuAdmin.module.css';
@@ -81,18 +82,181 @@ function getStoredMenu(resortConfig, resortId) {
   return getDefaultMenu(resortConfig);
 }
 
+// Dietary badge display
+function DietaryBadges({ dietary = [], dietaryFlags }) {
+  if (!dietary || dietary.length === 0) return null;
+  return (
+    <span className={styles.badges}>
+      {dietary.map(flag => (
+        <span key={flag} className={styles.badge}>
+          {dietaryFlags[flag]?.label}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// Single item row — compact read view with inline edit
+function ItemRow({ item, section, index, category, onUpdate, onToggleAvailable, dietaryFlags, initialEditing = false }) {
+  const [editing, setEditing] = useState(initialEditing);
+
+  const handleNameChange = (e) => {
+    const newName = typeof item.name === 'object'
+      ? { ...item.name, en: e.target.value }
+      : e.target.value;
+    onUpdate(section, index, 'name', newName, category);
+  };
+
+  const handleDescChange = (e) => {
+    const newDesc = typeof item.description === 'object'
+      ? { ...item.description, en: e.target.value }
+      : e.target.value;
+    onUpdate(section, index, 'description', newDesc, category);
+  };
+
+  const handlePriceToggle = (e) => {
+    onUpdate(section, index, 'price', e.target.checked ? 0 : 5, category);
+  };
+
+  const handlePriceChange = (e) => {
+    onUpdate(section, index, 'price', parseFloat(e.target.value) || 0, category);
+  };
+
+  const handleDietaryToggle = (flag) => {
+    const current = item.dietary || [];
+    const updated = current.includes(flag)
+      ? current.filter(f => f !== flag)
+      : [...current, flag];
+    onUpdate(section, index, 'dietary', updated, category);
+  };
+
+  const name = item.name?.en || item.name || '';
+  const description = item.description?.en || item.description || '';
+
+  return (
+    <div className={`${styles.itemRow} ${!item.available ? styles.unavailable : ''}`}>
+      <div className={styles.itemReadRow}>
+        <div className={styles.itemMain}>
+          <div className={styles.itemNameRow}>
+            <span className={styles.itemName}>{name}</span>
+            <DietaryBadges dietary={item.dietary} dietaryFlags={dietaryFlags} />
+            {item.price > 0 && <span className={styles.itemPrice}>${item.price}</span>}
+          </div>
+          {description && (
+            <p className={styles.itemDesc}>{description}</p>
+          )}
+        </div>
+        <div className={styles.itemActions}>
+          <button
+            className={`${styles.editBtn} ${editing ? styles.editBtnActive : ''}`}
+            onClick={() => setEditing(!editing)}
+          >
+            {editing ? 'Done' : 'Edit'}
+          </button>
+          <label className={styles.availableToggle}>
+            <input
+              type="checkbox"
+              checked={item.available}
+              onChange={(e) => onToggleAvailable(section, index, e.target.checked, category)}
+            />
+            <span className={styles.toggleSlider}></span>
+          </label>
+        </div>
+      </div>
+
+      {editing && (
+        <div className={styles.itemEditPanel}>
+          <div className={styles.editField}>
+            <label className={styles.editLabel}>Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={handleNameChange}
+              className={styles.editInput}
+              placeholder="Item name"
+            />
+          </div>
+          {item.description !== undefined && (
+            <div className={styles.editField}>
+              <label className={styles.editLabel}>Description</label>
+              <input
+                type="text"
+                value={description}
+                onChange={handleDescChange}
+                className={styles.editInput}
+                placeholder="Description"
+              />
+            </div>
+          )}
+          <div className={styles.editField}>
+            <label className={styles.editLabel}>Price</label>
+            <div className={styles.priceControls}>
+              <label className={styles.priceLabel}>
+                <input
+                  type="checkbox"
+                  checked={item.price === 0}
+                  onChange={handlePriceToggle}
+                  className={styles.checkbox}
+                />
+                <span>Complimentary</span>
+              </label>
+              {item.price > 0 && (
+                <div className={styles.priceInput}>
+                  <span className={styles.currency}>$</span>
+                  <input
+                    type="number"
+                    value={item.price}
+                    onChange={handlePriceChange}
+                    min="0"
+                    step="0.5"
+                    className={styles.numberInput}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+          <div className={styles.editField}>
+            <label className={styles.editLabel}>Dietary / Allergens</label>
+            <div className={styles.dietaryControls}>
+              {Object.entries(dietaryFlags).map(([key, flag]) => (
+                <label key={key} className={styles.dietaryOption}>
+                  <input
+                    type="checkbox"
+                    checked={(item.dietary || []).includes(key)}
+                    onChange={() => handleDietaryToggle(key)}
+                    className={styles.checkbox}
+                  />
+                  <span className={styles.dietaryLabel}>{flag.label}</span>
+                  <span className={styles.dietaryName}>{flag.name.en}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MenuAdmin() {
   const { resortConfig, resortId } = useApp();
-  const [activeTab, setActiveTab] = useState('proteins');
+  const navigate = useNavigate();
+  const firstCategory = resortConfig.menu.menuCategories.find(c => c.id !== 'build-your-own')?.id || 'build-your-own';
+  const [activeTab, setActiveTab] = useState(firstCategory);
   const [menu, setMenu] = useState(() => getStoredMenu(resortConfig, resortId));
   const [saved, setSaved] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('picaditos');
   const [showShareModal, setShowShareModal] = useState(false);
   const [copied, setCopied] = useState('');
+  const [customSections, setCustomSections] = useState([]);
+  const [dirty, setDirty] = useState(false);
+  const [lastAddedId, setLastAddedId] = useState(null);
+
+  const menuCategories = resortConfig.menu.menuCategories;
+  const dietaryFlags = resortConfig.menu.dietaryFlags;
 
   useEffect(() => {
-    document.title = 'Beach Eats Admin';
-  }, []);
+    document.title = 'Menu Manager — ' + (resortConfig.branding.name.en || 'Beach Eats');
+  }, [resortConfig]);
 
   const storageKey = getStorageKey(resortId);
 
@@ -102,6 +266,7 @@ export default function MenuAdmin() {
 
   const handleSave = () => {
     saveMenu(menu);
+    setDirty(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -111,24 +276,53 @@ export default function MenuAdmin() {
       const defaultMenu = getDefaultMenu(resortConfig);
       setMenu(defaultMenu);
       saveMenu(defaultMenu);
+      setDirty(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     }
   };
 
-  const updateItem = (section, index, field, value) => {
+  const updateItem = (section, index, field, value, category) => {
+    setDirty(true);
     setMenu(prev => {
       const updated = { ...prev };
       if (section === 'menuItems') {
         updated.menuItems = { ...prev.menuItems };
-        updated.menuItems[selectedCategory] = [...prev.menuItems[selectedCategory]];
-        updated.menuItems[selectedCategory][index] = {
-          ...updated.menuItems[selectedCategory][index],
+        updated.menuItems[category] = [...prev.menuItems[category]];
+        updated.menuItems[category][index] = {
+          ...updated.menuItems[category][index],
           [field]: value,
         };
       } else {
         updated[section] = [...prev[section]];
         updated[section][index] = { ...updated[section][index], [field]: value };
+      }
+      return updated;
+    });
+  };
+
+  const toggleAvailable = (section, index, available, category) => {
+    updateItem(section, index, 'available', available, category);
+  };
+
+  const addItem = (section, category) => {
+    const id = `custom-${Date.now()}`;
+    const newItem = {
+      id,
+      name: '',
+      description: '',
+      price: 0,
+      available: true,
+    };
+    setLastAddedId(id);
+    setDirty(true);
+    setMenu(prev => {
+      const updated = { ...prev };
+      if (section === 'menuItems') {
+        updated.menuItems = { ...prev.menuItems };
+        updated.menuItems[category] = [...(prev.menuItems[category] || []), newItem];
+      } else {
+        updated[section] = [...prev[section], newItem];
       }
       return updated;
     });
@@ -145,107 +339,77 @@ export default function MenuAdmin() {
     });
   };
 
+  const addSection = () => {
+    const sectionName = prompt('Enter section name:');
+    if (!sectionName || !sectionName.trim()) return;
+    const sectionId = sectionName.trim().toLowerCase().replace(/\s+/g, '-');
+    if (menu.menuItems[sectionId]) {
+      alert('A section with that name already exists.');
+      return;
+    }
+    setDirty(true);
+    setCustomSections(prev => [...prev, { id: sectionId, label: sectionName.trim() }]);
+    setMenu(prev => ({
+      ...prev,
+      menuItems: { ...prev.menuItems, [sectionId]: [] },
+    }));
+    setActiveTab(sectionId);
+  };
+
+  // Build tab list from menuCategories, with Build Your Own moved to end
   const tabs = [
-    { id: 'proteins', label: 'Proteins', icon: '🥩' },
-    { id: 'formats', label: 'Formats', icon: '🌮' },
-    { id: 'addons', label: 'Add-ons', icon: '🥑' },
-    { id: 'exclusions', label: 'Exclusions', icon: '🚫' },
-    { id: 'menuItems', label: 'Menu Items', icon: '📋' },
+    ...menuCategories.filter(cat => cat.id !== 'build-your-own'),
+    ...customSections.map(s => ({ id: s.id, label: s.label })),
+    ...menuCategories.filter(cat => cat.id === 'build-your-own'),
+  ].map(cat => ({
+    id: cat.id,
+    label: cat.label || cat.name?.en,
+  }));
+
+  // Count items per tab
+  const getTabCount = (tabId) => {
+    if (tabId === 'build-your-own') {
+      return menu.proteins.length + menu.formats.length + menu.addons.length + menu.exclusions.length;
+    }
+    return (menu.menuItems[tabId] || []).length;
+  };
+
+  // Sub-groups for Build Your Own
+  const byoGroups = [
+    { key: 'proteins', label: 'Proteins', items: menu.proteins },
+    { key: 'formats', label: 'Formats', items: menu.formats },
+    { key: 'addons', label: 'Add-ons', items: menu.addons },
+    { key: 'exclusions', label: 'Exclusions', items: menu.exclusions },
   ];
-
-  const menuCategories = Object.keys(menu.menuItems);
-
-  const renderPriceInput = (section, index, item) => (
-    <div className={styles.priceGroup}>
-      <label className={styles.priceLabel}>
-        <input
-          type="checkbox"
-          checked={item.price === 0}
-          onChange={(e) => updateItem(section, index, 'price', e.target.checked ? 0 : 5)}
-          className={styles.checkbox}
-        />
-        <span>Complimentary</span>
-      </label>
-      {item.price > 0 && (
-        <div className={styles.priceInput}>
-          <span className={styles.currency}>$</span>
-          <input
-            type="number"
-            value={item.price}
-            onChange={(e) => updateItem(section, index, 'price', parseFloat(e.target.value) || 0)}
-            min="0"
-            step="0.5"
-            className={styles.numberInput}
-          />
-        </div>
-      )}
-    </div>
-  );
-
-  const renderItemEditor = (section, items) => (
-    <div className={styles.itemList}>
-      {items.map((item, index) => (
-        <div key={item.id} className={`${styles.itemCard} ${!item.available ? styles.unavailable : ''}`}>
-          <div className={styles.itemHeader}>
-            <div className={styles.itemInfo}>
-              <input
-                type="text"
-                value={item.name?.en || item.name || ''}
-                onChange={(e) => {
-                  const newName = typeof item.name === 'object'
-                    ? { ...item.name, en: e.target.value }
-                    : e.target.value;
-                  updateItem(section, index, 'name', newName);
-                }}
-                className={styles.nameInput}
-                placeholder="Item name"
-              />
-              {item.description && (
-                <input
-                  type="text"
-                  value={item.description?.en || item.description || ''}
-                  onChange={(e) => {
-                    const newDesc = typeof item.description === 'object'
-                      ? { ...item.description, en: e.target.value }
-                      : e.target.value;
-                    updateItem(section, index, 'description', newDesc);
-                  }}
-                  className={styles.descInput}
-                  placeholder="Description"
-                />
-              )}
-            </div>
-            <label className={styles.availableToggle}>
-              <input
-                type="checkbox"
-                checked={item.available}
-                onChange={(e) => updateItem(section, index, 'available', e.target.checked)}
-              />
-              <span className={styles.toggleSlider}></span>
-            </label>
-          </div>
-          {renderPriceInput(section, index, item)}
-        </div>
-      ))}
-    </div>
-  );
 
   return (
     <div className={styles.admin}>
       <header className={styles.header}>
         <div className={styles.headerLeft}>
           <h1 className={styles.title}>Menu Manager</h1>
-          <span className={styles.subtitle}>Beach Eats CMS</span>
+          <span className={styles.subtitle}>{resortConfig.branding.name.en}</span>
         </div>
         <div className={styles.headerActions}>
+          <button onClick={() => {
+            if (dirty) {
+              const action = confirm('You have unsaved changes. Save before leaving?');
+              if (action) {
+                saveMenu(menu);
+                setDirty(false);
+              }
+            }
+            navigate(`/resorts/${resortId}/demo`);
+          }} className={styles.backBtn}>
+            Back to Demo
+          </button>
           <button onClick={() => setShowShareModal(true)} className={styles.shareBtn}>
-            Share Config
+            Share
           </button>
           <button onClick={handleReset} className={styles.resetBtn}>
             Reset
           </button>
           <button onClick={handleSave} className={`${styles.saveBtn} ${saved ? styles.saved : ''}`}>
-            {saved ? '✓ Saved' : 'Save'}
+            {saved ? 'Saved' : 'Save'}
           </button>
         </div>
       </header>
@@ -257,37 +421,77 @@ export default function MenuAdmin() {
             className={`${styles.tab} ${activeTab === tab.id ? styles.active : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
-            <span className={styles.tabIcon}>{tab.icon}</span>
             <span className={styles.tabLabel}>{tab.label}</span>
+            <span className={styles.tabCount}>{getTabCount(tab.id)}</span>
           </button>
         ))}
+        <button className={styles.addSectionBtn} onClick={addSection}>
+          + Section
+        </button>
       </nav>
 
       <main className={styles.content}>
-        {activeTab === 'menuItems' && (
-          <div className={styles.categorySelector}>
-            {menuCategories.map(cat => (
-              <button
-                key={cat}
-                className={`${styles.categoryBtn} ${selectedCategory === cat ? styles.activeCategory : ''}`}
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </button>
+        {activeTab === 'build-your-own' && (
+          <div className={styles.byoContent}>
+            {byoGroups.map(group => (
+              <div key={group.key} className={styles.subGroup}>
+                <h3 className={styles.subGroupLabel}>
+                  {group.label}
+                  <span className={styles.subGroupCount}>{group.items.length}</span>
+                </h3>
+                <div className={styles.itemList}>
+                  {group.items.map((item, index) => (
+                    <ItemRow
+                      key={item.id}
+                      item={item}
+                      section={group.key}
+                      index={index}
+                      onUpdate={updateItem}
+                      onToggleAvailable={toggleAvailable}
+                      dietaryFlags={dietaryFlags}
+                      initialEditing={item.id === lastAddedId}
+                    />
+                  ))}
+                </div>
+                <button
+                  className={styles.addItemBtn}
+                  onClick={() => addItem(group.key)}
+                >
+                  + Add {group.label.replace(/s$/, '')}
+                </button>
+              </div>
             ))}
           </div>
         )}
 
-        {activeTab === 'proteins' && renderItemEditor('proteins', menu.proteins)}
-        {activeTab === 'formats' && renderItemEditor('formats', menu.formats)}
-        {activeTab === 'addons' && renderItemEditor('addons', menu.addons)}
-        {activeTab === 'exclusions' && renderItemEditor('exclusions', menu.exclusions)}
-        {activeTab === 'menuItems' && renderItemEditor('menuItems', menu.menuItems[selectedCategory] || [])}
+        {activeTab !== 'build-your-own' && menu.menuItems[activeTab] !== undefined && (
+          <>
+            {menu.menuItems[activeTab].length > 0 && (
+              <div className={styles.itemList}>
+                {menu.menuItems[activeTab].map((item, index) => (
+                  <ItemRow
+                    key={item.id}
+                    item={item}
+                    section="menuItems"
+                    index={index}
+                    category={activeTab}
+                    onUpdate={updateItem}
+                    onToggleAvailable={toggleAvailable}
+                    dietaryFlags={dietaryFlags}
+                    initialEditing={item.id === lastAddedId}
+                  />
+                ))}
+              </div>
+            )}
+            <button
+              className={styles.addItemBtn}
+              onClick={() => addItem('menuItems', activeTab)}
+            >
+              + Add Item
+            </button>
+          </>
+        )}
       </main>
-
-      <footer className={styles.footer}>
-        <p>Click "Share Config" to generate QR codes with your current menu settings.</p>
-      </footer>
 
       {/* Share Modal */}
       {showShareModal && (
@@ -312,7 +516,7 @@ export default function MenuAdmin() {
                   className={`${styles.copyBtn} ${copied === 'guest' ? styles.copied : ''}`}
                   onClick={() => handleCopy(guestUrl, 'guest')}
                 >
-                  {copied === 'guest' ? '✓ Copied!' : 'Copy Link'}
+                  {copied === 'guest' ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>
 
@@ -327,7 +531,7 @@ export default function MenuAdmin() {
                   className={`${styles.copyBtn} ${copied === 'kitchen' ? styles.copied : ''}`}
                   onClick={() => handleCopy(kitchenUrl, 'kitchen')}
                 >
-                  {copied === 'kitchen' ? '✓ Copied!' : 'Copy Link'}
+                  {copied === 'kitchen' ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>
             </div>

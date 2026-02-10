@@ -4,7 +4,7 @@
 /* CSS Custom Properties - Susurros del Corazón Theme */
 :root {
   /* Colors */
-  --color-primary: #515052;
+  --color-primary: #2d2d2d;
   --color-secondary: #949292;
   --color-accent: #8B7355;
   --color-background: #FDFBF8;
@@ -12,11 +12,11 @@
   --color-surface-alt: #F5F2ED;
   --color-border: #E8E4DF;
   --color-border-hover: #D4CFC8;
-  --color-button-primary: #515052;
+  --color-button-primary: #2d2d2d;
   --color-button-primary-text: #FFFFFF;
   --color-success: #6B8E6B;
   --color-error: #B85C5C;
-  --color-overlay: rgba(81, 80, 82, 0.6);
+  --color-overlay: rgba(45, 45, 45, 0.6);
 
   /* Typography */
   --font-heading: 'Playfair Display', Georgia, 'Times New Roman', serif;

@@ -1,7 +1,7 @@
 .demoPage {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f6f3 0%, #f0ebe4 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-body);
 }
 
 .header {
@@ -19,11 +19,12 @@
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #c45d3a;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 400;
+  color: #2d2d2d;
   margin: 0;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
@@ -65,8 +66,9 @@
 }
 
 .intro h2 {
-  font-size: 32px;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 3.5vw, 36px);
+  font-weight: 400;
   color: #2d2d2d;
   margin: 0 0 12px 0;
 }
@@ -120,8 +122,9 @@
 }
 
 .cardTitle {
+  font-family: var(--font-heading);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 400;
   color: #2d2d2d;
   margin: 0;
 }
@@ -220,10 +223,12 @@
 }
 
 .resortHeader .resortName {
+  font-family: var(--font-heading);
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 400;
   color: #2d2d2d;
   margin: 0 0 8px 0;
+  font-style: normal;
 }
 
 .resortByline {
@@ -245,39 +250,39 @@
   margin-bottom: 48px;
 }
 
-.liveDemoToggle {
+.liveDemoToggles {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 24px;
 }
 
-.liveDemoBtn {
-  padding: 12px 28px;
+.panelToggle {
+  padding: 10px 22px;
   border: 1px solid #e8e4de;
   background: #fff;
-  color: #2d2d2d;
-  font-size: 14px;
-  font-weight: 600;
+  color: #999;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: 100px;
+  transition: all 0.25s ease;
   font-family: var(--font-body, inherit);
 }
 
-.liveDemoBtn:hover {
-  border-color: #c45d3a;
-  color: #c45d3a;
+.panelToggle:hover {
+  border-color: #bbb;
+  color: #2d2d2d;
 }
 
-.liveDemoBtnActive {
+.panelToggleActive {
   background: #2d2d2d;
   color: #fff;
   border-color: #2d2d2d;
 }
 
-.liveDemoBtnActive:hover {
+.panelToggleActive:hover {
   background: #1a1a1a;
   border-color: #1a1a1a;
   color: #fff;
@@ -293,10 +298,19 @@
 
 .liveDemoFrames {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: 24px;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+  grid-template-columns: 1fr;
+}
+
+.liveDemoFrames[data-panel-count="2"] {
+  grid-template-columns: 1fr 1fr;
+  max-width: 900px;
+}
+
+.liveDemoFrames[data-panel-count="3"] {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .frameWrapper {
@@ -325,8 +339,24 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
+.liveDemoFrames[data-panel-count="3"] .phoneFrame {
+  height: 600px;
+}
+
+@media (max-width: 1024px) {
+  .liveDemoFrames[data-panel-count="3"] {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 768px) {
-  .liveDemoFrames {
+  .liveDemoToggles {
+    flex-wrap: wrap;
+  }
+
+  .liveDemoFrames,
+  .liveDemoFrames[data-panel-count="2"],
+  .liveDemoFrames[data-panel-count="3"] {
     grid-template-columns: 1fr;
   }
 
@@ -401,6 +431,6 @@
   }
 
   .intro h2 {
-    font-size: 24px;
+    font-size: 26px;
   }
 }

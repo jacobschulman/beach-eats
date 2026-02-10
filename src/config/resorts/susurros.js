@@ -40,7 +40,7 @@ const susurrosConfig = {
 
     colors: {
       // Primary palette - warm earth tones
-      primary: '#515052',      // Charcoal - main text
+      primary: '#2d2d2d',      // Dark charcoal - main text
       secondary: '#949292',    // Warm gray - secondary text
       accent: '#8B7355',       // Warm brown - accent elements
 
@@ -54,17 +54,17 @@ const susurrosConfig = {
       borderHover: '#D4CFC8',  // Hover state borders
 
       // Interactive
-      buttonPrimary: '#515052',
+      buttonPrimary: '#2d2d2d',
       buttonPrimaryText: '#FFFFFF',
       buttonSecondary: 'transparent',
-      buttonSecondaryText: '#515052',
+      buttonSecondaryText: '#2d2d2d',
 
       // States
       success: '#6B8E6B',      // Muted green
       error: '#B85C5C',        // Muted red
 
       // Overlay
-      overlay: 'rgba(81, 80, 82, 0.6)',
+      overlay: 'rgba(45, 45, 45, 0.6)',
     },
 
     typography: {
